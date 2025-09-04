@@ -334,9 +334,9 @@ if st.button("🎬 Lancer la simulation"):
     # (1) Nominal
     ax = axes[0]
     ax.fill_between(dates, q10_nom.values, q90_nom.values, alpha=0.20, label="Fourchette probable (80%)")
-    ax.plot(dates, q50_nom.values, label="Médiane (nominal)")
-    ax.plot(dates, q10_nom.values, linestyle="--", linewidth=1, label="P10")
-    ax.plot(dates, q90_nom.values, linestyle="--", linewidth=1, label="P90")
+    ax.plot(dates, q50_nom.values, label="Scénario central (50/50)")
+    ax.plot(dates, q10_nom.values, linestyle="--", linewidth=1, label="Scénario défavorable (90 % de chances d’être au-dessus)")
+    ax.plot(dates, q90_nom.values, linestyle="--", linewidth=1, label="Scénario favorable (90 % de chances d’être en dessous)")
     ax.plot(dates, livret_path, color="black", label="Livret A (nominal)")
     ax.plot(dates, matelas_path, color="grey", linestyle=":", label="Matelas (0%)")
     ax.set_ylabel("€ (nominal)")
@@ -351,7 +351,6 @@ if st.button("🎬 Lancer la simulation"):
             label="Scénario défavorable (90 % de chances d’être au-dessus)")
     ax.plot(dates, q90_real.values, linestyle="--", linewidth=1,
             label="Scénario favorable (90 % de chances d’être en dessous)")
-    
     ax.plot(dates, livret_real, color="black", label="Livret A (réel)")
     ax.plot(dates, matelas_real, color="grey", linestyle=":", label="Matelas (0 %, réel)")
     ax.set_xlabel("Date"); ax.set_ylabel("€ constants (pouvoir d’achat)")
