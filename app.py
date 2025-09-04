@@ -337,6 +337,6 @@ if st.button("🎬 Lancer la simulation"):
         st.metric("Proportion de runs avec crise", f"{res['prop_with_crisis']*100:.1f}%")
         st.metric("Nb de simulations", f"{int(n_sims):,}")
 
-    st.success("✅ Simulation terminée")
+    st.success("✅ Simulation terminée, merci de l'avoir utilisée, j'espère qu'elle vous a été utile. Joseph")
 else:
     st.info("Choisis tes paramètres puis clique sur **Lancer la simulation**.")
