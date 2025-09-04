@@ -69,8 +69,14 @@ n_sample_paths = st.number_input(
 )
 n_sample_paths = int(n_sample_paths)
 
-index_contrib_to_inflation = st.checkbox("Indexer le DCA à l'inflation", value=False)
-use_custom_corr = st.checkbox("Corrélations simples réalistes (actions corrélées, oblig peu)", value=False)
+index_contrib_to_inflation = st.checkbox("Augmenter ton versement chaque année selon l’inflation (pour garder le même pouvoir d’achat)", value=False)
+
+
+use_custom_corr = st.checkbox(
+    "Corrélations réalistes : les actions montent/baissent souvent ensemble, les obligations sont plus stables",
+    value=False
+)
+
 
 # ================== Scénarios ==================
 SCENARIOS = {
