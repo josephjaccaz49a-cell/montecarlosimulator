@@ -289,39 +289,39 @@ if st.button("🎬 Lancer la simulation"):
 
     st.pyplot(fig)
 
-    import io
-
-# -- Export PNG du graphe --
-buf = io.BytesIO()
-fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
-st.download_button(
-    label="📥 Télécharger le graphique (PNG)",
-    data=buf.getvalue(),
-    file_name="simulation_jojo.png",
-    mime="image/png",
-)
-
-# -- Export CSV des courbes clés --
-export_df = pd.DataFrame({
-    "date": dates,
-    "q10_nom": q10_nom.values,
-    "q50_nom": q50_nom.values,
-    "q90_nom": q90_nom.values,
-    "q10_real": q10_real.values,
-    "q50_real": q50_real.values,
-    "q90_real": q90_real.values,
-    "livret_nom": livret_path,
-    "matelas_nom": matelas_path,
-    "livret_real": livret_real,
-    "matelas_real": matelas_real,
-})
-csv_bytes = export_df.to_csv(index=False).encode("utf-8")
-st.download_button(
-    label="📥 Télécharger les percentiles (CSV)",
-    data=csv_bytes,
-    file_name="simulation_jojo_percentiles.csv",
-    mime="text/csv",
-)
+        import io
+    
+    # -- Export PNG du graphe --
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+    st.download_button(
+        label="📥 Télécharger le graphique (PNG)",
+        data=buf.getvalue(),
+        file_name="simulation_jojo.png",
+        mime="image/png",
+    )
+    
+    # -- Export CSV des courbes clés --
+    export_df = pd.DataFrame({
+        "date": dates,
+        "q10_nom": q10_nom.values,
+        "q50_nom": q50_nom.values,
+        "q90_nom": q90_nom.values,
+        "q10_real": q10_real.values,
+        "q50_real": q50_real.values,
+        "q90_real": q90_real.values,
+        "livret_nom": livret_path,
+        "matelas_nom": matelas_path,
+        "livret_real": livret_real,
+        "matelas_real": matelas_real,
+    })
+    csv_bytes = export_df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="📥 Télécharger les percentiles (CSV)",
+        data=csv_bytes,
+        file_name="simulation_jojo_percentiles.csv",
+        mime="text/csv",
+    )
 
 
     # ===== Synthèse métriques =====
