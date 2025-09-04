@@ -1,4 +1,4 @@
-# app.py — Simulateur Monte Carlo DCA (Streamlit)
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +8,6 @@ import streamlit as st
 st.set_page_config(page_title="Simulateur Monte Carlo de Jojo", layout="wide")
 
 st.title("🚀 Simulateur Monte Carlo multi-actifs de Jojo")
-st.caption("DCA hebdo, inflation, dividendes réinvestis, corrélations, crises aléatoires, percentiles & trajectoires.")
 
 st.markdown("""
 Bienvenue dans **le simulateur Monte Carlo de Jojo** 🎲📈
@@ -100,31 +99,58 @@ _scn = SCENARIOS[scenario_label]
 if _scn["inflation_annual"] is not None:
     inflation_annual = _scn["inflation_annual"]
 
-# ================== Portefeuille (standard équilibré) ==================
-portfolio = [
-    {"name": "MSCI World",                     "weight": 0.55, "mu": 0.065, "sigma": 0.15, "dividend_yield": 0.018, "beta_crisis": 1.0},
-    {"name": "MSCI Emerging Markets",          "weight": 0.15, "mu": 0.075, "sigma": 0.20, "dividend_yield": 0.022, "beta_crisis": 1.0},
-    {"name": "Obligations EUR (court terme)",  "weight": 0.20, "mu": 0.020, "sigma": 0.05, "dividend_yield": 0.000, "beta_crisis": 0.3},
-    {"name": "Europe Quality Dividend",        "weight": 0.10, "mu": 0.055, "sigma": 0.14, "dividend_yield": 0.030, "beta_crisis": 1.0},
-]
-assets = pd.DataFrame(portfolio)
+# ================== Sélecteur de portefeuille ==================
+st.subheader("🧺 Choisis un portefeuille type")
+
+PRESETS = {
+    "Standard équilibré": [
+        {"name": "MSCI World",                     "weight": 0.55, "mu": 0.065, "sigma": 0.15, "dividend_yield": 0.018, "beta_crisis": 1.0},
+        {"name": "MSCI Emerging Markets",          "weight": 0.15, "mu": 0.075, "sigma": 0.20, "dividend_yield": 0.022, "beta_crisis": 1.0},
+        {"name": "Obligations EUR (court terme)",  "weight": 0.20, "mu": 0.020, "sigma": 0.05, "dividend_yield": 0.000, "beta_crisis": 0.3},
+        {"name": "Europe Quality Dividend",        "weight": 0.10, "mu": 0.055, "sigma": 0.14, "dividend_yield": 0.030, "beta_crisis": 1.0},
+    ],
+
+    # Concentré et mal diversifié : quasi tout sur EM, peu d'oblig, volatilité + élevée.
+    "Éclaté au sol (mal diversifié)": [
+        {"name": "MSCI World",                     "weight": 0.10, "mu": 0.065, "sigma": 0.16, "dividend_yield": 0.018, "beta_crisis": 1.0},
+        {"name": "MSCI Emerging Markets",          "weight": 0.75, "mu": 0.080, "sigma": 0.25, "dividend_yield": 0.020, "beta_crisis": 1.0},
+        {"name": "Obligations EUR (court terme)",  "weight": 0.05, "mu": 0.020, "sigma": 0.05, "dividend_yield": 0.000, "beta_crisis": 0.3},
+        {"name": "Europe Quality Dividend",        "weight": 0.10, "mu": 0.055, "sigma": 0.15, "dividend_yield": 0.030, "beta_crisis": 1.0},
+    ],
+
+    # Très offensif : max actions, peu d'oblig, risque élevé.
+    "Super agressif": [
+        {"name": "MSCI World",                     "weight": 0.55, "mu": 0.070, "sigma": 0.17, "dividend_yield": 0.015, "beta_crisis": 1.0},
+        {"name": "MSCI Emerging Markets",          "weight": 0.30, "mu": 0.085, "sigma": 0.26, "dividend_yield": 0.018, "beta_crisis": 1.0},
+        {"name": "Obligations EUR (court terme)",  "weight": 0.05, "mu": 0.018, "sigma": 0.05, "dividend_yield": 0.000, "beta_crisis": 0.3},
+        {"name": "Europe Quality Dividend",        "weight": 0.10, "mu": 0.055, "sigma": 0.15, "dividend_yield": 0.030, "beta_crisis": 1.0},
+    ],
+}
+
+preset_name = st.selectbox(
+    "Sélection du portefeuille",
+    list(PRESETS.keys()),
+    index=0,
+    help="Choisis un set de poids/hypothèses tout prêts pour tester rapidement."
+)
+
+portfolio = PRESETS[preset_name]
+assets = pd.DataFrame(portfolio).copy()
+
+# Sécurité : si la somme de poids ≠ 1, on renormalise
 if not np.isclose(assets["weight"].sum(), 1.0):
     assets["weight"] = assets["weight"] / assets["weight"].sum()
 
-# Résumé portefeuille
-st.subheader("🧺 Portfolio actuel")
-
+# ------- Affichage propre du portefeuille -------
 df_portfolio = assets.assign(
     Poids=(assets["weight"]*100).round(1).astype(str) + " %",
     Rendement=(assets["mu"]*100).round(2).astype(str) + " %",
     Volatilité=(assets["sigma"]*100).round(2).astype(str) + " %",
     Dividende=(assets["dividend_yield"]*100).round(2).astype(str) + " %"
-)[["name", "Poids", "Rendement", "Volatilité", "Dividende"]]
+)[["name", "Poids", "Rendement", "Volatilité", "Dividende"]].rename(columns={"name": "Actif"})
 
-st.dataframe(df_portfolio.rename(columns={"name": "Actif"}), width="stretch")
-
-st.caption("💡 Poids = proportion du portefeuille. Rendement = espérance de croissance annuelle. "
-           "Volatilité = amplitude moyenne des variations. Dividende = rendement versé chaque année.")
+st.dataframe(df_portfolio, width="stretch")
+st.caption("💡 Les rendements/volatilités sont des hypothèses pédagogiques. Les poids sont renormalisés si besoin.")
 
 
 # ================== Fonctions utilitaires ==================
