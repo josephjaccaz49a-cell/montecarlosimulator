@@ -425,7 +425,6 @@ if st.button("🎬 Lancer la simulation"):
         st.metric("Nb de simulations", f"{int(n_sims):,}")
 
    st.markdown("""
-   
    👉 **Comment lire les résultats :**  
    - Les graphiques montrent deux choses :  
       - en haut : l’évolution en **valeur nominale** (ce que tu verrais sur ton compte en banque)  
