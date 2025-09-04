@@ -402,10 +402,10 @@ if st.button("🎬 Lancer la simulation"):
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Médiane (réel)", f"{finals_real.median():,.0f} €")
-        st.metric("CAGR médian (réel)", "N/A" if np.isnan(res["cagr_real"]) else f"{res['cagr_real']*100:.2f}%/an")
+        st.metric("Taux de croissance annuel composé médian (réel)", "N/A" if np.isnan(res["cagr_real"]) else f"{res['cagr_real']*100:.2f}%/an")
     with col2:
         st.metric("Médiane (nominal)", f"{finals_nom.median():,.0f} €")
-        st.metric("CAGR médian (nominal)", "N/A" if np.isnan(res["cagr_nom"]) else f"{res['cagr_nom']*100:.2f}%/an")
+        st.metric("Taux de croissance annuel composé médian (nominal)", "N/A" if np.isnan(res["cagr_nom"]) else f"{res['cagr_nom']*100:.2f}%/an")
     with col3:
         st.metric("Proportion de runs avec crise", f"{res['prop_with_crisis']*100:.1f}%")
         st.metric("Nb de simulations", f"{int(n_sims):,}")
