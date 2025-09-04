@@ -62,8 +62,13 @@ with colE:
 inflation_annual = inflation_pct / 100.0
 
 scenario_label = st.selectbox("Scénario de crises", ["Doux (crises rares/courtes)","Central (réaliste)","Stress (fréquentes/longues/fortes)"])
-show_sample_paths = st.checkbox("Afficher des trajectoires individuelles (échantillon)", value=True)
-n_sample_paths = st.slider("Nb de trajectoires à afficher", 3, 50, 12) if show_sample_paths else 0
+show_sample_paths = st.checkbox("Afficher des trajectoires individuelles", value=True)
+n_sample_paths = st.number_input(
+    "Nombre de trajectoires à afficher (max 30)",
+    min_value=0, max_value=30, value=12, step=1
+)
+n_sample_paths = int(n_sample_paths)
+
 index_contrib_to_inflation = st.checkbox("Indexer le DCA à l'inflation", value=False)
 use_custom_corr = st.checkbox("Corrélations simples réalistes (actions corrélées, oblig peu)", value=False)
 
