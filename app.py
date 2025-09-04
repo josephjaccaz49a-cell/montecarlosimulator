@@ -320,11 +320,13 @@ if st.button("🎬 Lancer la simulation"):
 
     # Trajectoires individuelles (mêmes indices pour haut/bas)
     if show_sample_paths and n_sample_paths > 0:
-        n_total = pt_nom.shape[1]
-        idx = np.random.choice(n_total, size=min(n_sample_paths, n_total), replace=False)
-        for k, label in zip(idx, ["Trajectoires (échantillon)"] + [None]*(len(idx)-1)):
-            axes[0].plot(dates, pt_nom[:, k], linewidth=0.7, alpha=0.35, label=label)
-            axes[1].plot(dates, pt_real[:, k], linewidth=0.7, alpha=0.35)
+    n_total = pt_nom.shape[1]
+    k = min(n_sample_paths, n_total)  # borne par le nb de runs
+    idx = np.random.choice(n_total, size=k, replace=False)
+    for i, k in enumerate(idx):
+        label = "Trajectoires (échantillon)" if i == 0 else None
+        axes[0].plot(dates, pt_nom[:, k], linewidth=0.7, alpha=0.35, label=label)
+        axes[1].plot(dates, pt_real[:, k], linewidth=0.7, alpha=0.35)
 
     for ax in axes:
         ax.legend(loc="best", title="Lecture :")
