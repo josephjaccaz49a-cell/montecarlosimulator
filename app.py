@@ -111,12 +111,17 @@ PRESETS = {
     ],
 
     # Concentré et mal diversifié : quasi tout sur EM, peu d'oblig, volatilité + élevée.
-    "Éclaté au sol (mal diversifié)": [
-        {"name": "MSCI World",                     "weight": 0.10, "mu": 0.065, "sigma": 0.16, "dividend_yield": 0.018, "beta_crisis": 1.0},
-        {"name": "MSCI Emerging Markets",          "weight": 0.75, "mu": 0.080, "sigma": 0.25, "dividend_yield": 0.020, "beta_crisis": 1.0},
-        {"name": "Obligations EUR (court terme)",  "weight": 0.05, "mu": 0.020, "sigma": 0.05, "dividend_yield": 0.000, "beta_crisis": 0.3},
-        {"name": "Europe Quality Dividend",        "weight": 0.10, "mu": 0.055, "sigma": 0.15, "dividend_yield": 0.030, "beta_crisis": 1.0},
-    ],
+    "Éclaté mais drôle (ultra spicy)": [
+    
+       {"name": "NASDAQ 100 x3 (levier)",          "weight": 0.25, "mu": 0.10,  "sigma": 0.45, "dividend_yield": 0.000, "beta_crisis": 1.30},
+       {"name": "Crypto (BTC+ETH)",                "weight": 0.25, "mu": 0.12,  "sigma": 0.80, "dividend_yield": 0.000, "beta_crisis": 1.50},
+       {"name": "Meme Stocks (panier)",            "weight": 0.15, "mu": 0.08,  "sigma": 0.50, "dividend_yield": 0.000, "beta_crisis": 1.40},
+       {"name": "Uranium Juniors",                 "weight": 0.10, "mu": 0.09,  "sigma": 0.40, "dividend_yield": 0.000, "beta_crisis": 1.20},
+       {"name": "Biotech Microcaps",               "weight": 0.10, "mu": 0.09,  "sigma": 0.55, "dividend_yield": 0.000, "beta_crisis": 1.40},
+       {"name": "Or (spot)",                       "weight": 0.10, "mu": 0.03,  "sigma": 0.18, "dividend_yield": 0.000, "beta_crisis": 0.60},
+       {"name": "Cash / Monétaire EUR",            "weight": 0.05, "mu": 0.02,  "sigma": 0.01, "dividend_yield": 0.000, "beta_crisis": 0.00},
+   ],
+
 
     # Très offensif : max actions, peu d'oblig, risque élevé.
     "Super agressif": [
