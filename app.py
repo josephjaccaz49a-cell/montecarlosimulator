@@ -289,7 +289,7 @@ if st.button("🎬 Lancer la simulation"):
 
     st.pyplot(fig)
 
-        import io
+import io
     
     # -- Export PNG du graphe --
     buf = io.BytesIO()
