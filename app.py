@@ -15,20 +15,6 @@ Bienvenue dans **le simulateur Monte Carlo de Jojo** 🎲📈
 Ce simulateur sert à visualiser l’évolution possible d’un **portefeuille d’investissement** 
 lorsqu’on investit chaque semaine un montant fixe (DCA = *Dollar Cost Averaging*).  
 
-👉 **Comment lire les résultats :**  
-- Les graphiques montrent deux choses :  
-   - en haut : l’évolution en **valeur nominale** (ce que tu verrais sur ton compte en banque)  
-   - en bas : l’évolution en **euros constants** (corrigée de l’inflation, donc en pouvoir d’achat).  
-- La **zone grisée** correspond aux **80 % de cas les plus probables** (entre scénario défavorable et favorable).  
-- La **ligne médiane** est le scénario “central” (le plus typique).  
-- Les lignes **noires et grises** servent de comparaison :  
-   - Livret A à 1.7 %  
-   - Matelas (0 %, juste accumuler le cash sous l’oreiller).  
-- Tu peux aussi voir quelques trajectoires individuelles (fines) qui montrent à quel point les marchés sont imprévisibles.  
-
-💡 **Attention :** Ce n’est pas une prédiction !  
-C’est une **simulation statistique** basée sur des hypothèses de rendement, volatilité et inflation.  
-Le but est pédagogique, pour mieux comprendre la puissance des intérêts composés et l’incertitude des marchés.
 """)
 
 
@@ -424,22 +410,22 @@ if st.button("🎬 Lancer la simulation"):
         st.metric("Proportion de runs avec crise", f"{res['prop_with_crisis']*100:.1f}%")
         st.metric("Nb de simulations", f"{int(n_sims):,}")
 
-   st.markdown("""
-   👉 **Comment lire les résultats :**  
-   - Les graphiques montrent deux choses :  
-      - en haut : l’évolution en **valeur nominale** (ce que tu verrais sur ton compte en banque)  
-      - en bas : l’évolution en **euros constants** (corrigée de l’inflation, donc en pouvoir d’achat).  
-   - La **zone grisée** correspond aux **80 % de cas les plus probables** (entre scénario défavorable et favorable).  
-   - La **ligne médiane** est le scénario “central” (le plus typique).  
-   - Les lignes **noires et grises** servent de comparaison :  
-      - Livret A à 1.7 %  
-      - Matelas (0 %, juste accumuler le cash sous l’oreiller).  
-   - Tu peux aussi voir quelques trajectoires individuelles (fines) qui montrent à quel point les marchés sont imprévisibles.  
-   
-   💡 **Attention :** Ce n’est pas une prédiction !  
-   C’est une **simulation statistique** basée sur des hypothèses de rendement, volatilité et inflation.  
-   Le but est pédagogique, pour mieux comprendre la puissance des intérêts composés et l’incertitude des marchés.
-   """)
+st.markdown("""
+👉 **Comment lire les résultats :**  
+- Les graphiques montrent deux choses :  
+   - en haut : l’évolution en **valeur nominale** (ce que tu verrais sur ton compte en banque)  
+   - en bas : l’évolution en **euros constants** (corrigée de l’inflation, donc en pouvoir d’achat).  
+- La **zone grisée** correspond aux **80 % de cas les plus probables** (entre scénario défavorable et favorable).  
+- La **ligne médiane** est le scénario “central” (le plus typique).  
+- Les lignes **noires et grises** servent de comparaison :  
+   - Livret A à 1.7 %  
+   - Matelas (0 %, juste accumuler le cash sous l’oreiller).  
+- Tu peux aussi voir quelques trajectoires individuelles (fines) qui montrent à quel point les marchés sont imprévisibles.  
+
+💡 **Attention :** Ce n’est pas une prédiction !  
+C’est une **simulation statistique** basée sur des hypothèses de rendement, volatilité et inflation.  
+Le but est pédagogique, pour mieux comprendre la puissance des intérêts composés et l’incertitude des marchés.
+""")
 
     st.success("✅ Simulation terminée, merci de l'avoir utilisée, j'espère qu'elle vous a été utile. Joseph")
 else:
