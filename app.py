@@ -7,7 +7,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Simulateur Monte Carlo de Jojo", layout="wide")
 
-st.title("🚀 Simulateur Monte Carlo multi-actifs — Jojo")
+st.title("🚀 Simulateur Monte Carlo multi-actifs de Jojo")
 st.caption("DCA hebdo, inflation, dividendes réinvestis, corrélations, crises aléatoires, percentiles & trajectoires.")
 
 # ================== UI : Paramètres ==================
