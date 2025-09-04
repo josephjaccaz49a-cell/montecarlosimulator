@@ -189,7 +189,7 @@ def sample_crisis_years(size, short_share, short_range, mid_share, mid_range, lo
     yrs[m_long] = np.random.uniform(*long_range, m_long.sum())
     return yrs
 
-@st.cache_data(show_spinner=False)
+
 def run_monte_carlo(n_sims, years, weekly_contribution, start_value, inflation_annual,
                     index_contrib_to_inflation, assets, scenario, use_custom_corr):
     dt = 1/52.0
