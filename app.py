@@ -12,10 +12,18 @@ st.title("🚀 Simulateur Monte Carlo multi-actifs de Jojo")
 st.markdown("""
 Bienvenue dans **le simulateur Monte Carlo de Jojo** 🎲📈
 
-Ce simulateur sert à visualiser l’évolution possible d’un **portefeuille d’investissement** 
-lorsqu’on investit chaque semaine un montant fixe (DCA = *Dollar Cost Averaging*).  
+J’ai créé cet outil parce que je me suis souvent demandé :  
+*« Que devient vraiment mon argent si j’investis un peu chaque semaine ? »*  
 
+Ce simulateur te permet de tester ça :  
+- tu choisis ton apport hebdo, ton horizon et un portefeuille,  
+- on simule des milliers de futurs possibles (avec ou sans crises),  
+- tu vois non seulement la valeur affichée sur ton compte (**nominal**),  
+  mais aussi ton vrai pouvoir d’achat (**corrigé de l’inflation**).  
+
+💡 Ce n’est pas une prédiction ni un conseil, juste une façon pédagogique de montrer à quel point l’épargne régulière, les crises et l’inflation transforment ton futur financier.
 """)
+
 
 
 # ================== UI : Paramètres ==================
