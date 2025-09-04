@@ -42,7 +42,7 @@ with colB:
 with colC:
     weekly_contribution = st.number_input("DCA hebdo (€)", min_value=0.0, value=100.0, step=10.0)
 with colD:
-    start_value = st.number_input("Capital initial (€)", min_value=0.0, value=0, step=100.0)
+    start_value = st.number_input("Capital initial (€)", min_value=0.0, value=1000, step=100.0)
 with colE:
     inflation_annual = st.number_input("Inflation annuelle (%)", min_value=0.0, max_value=10.0, value=2.0, step=0.5) / 100.0
 
