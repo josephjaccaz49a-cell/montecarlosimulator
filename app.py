@@ -36,11 +36,17 @@ Le but est pédagogique, pour mieux comprendre la puissance des intérêts compo
 # ================== UI : Paramètres ==================
 colA, colB, colC, colD, colE = st.columns(5)
 with colA:
-    n_sims = st.number_input("Nombre de simulations", min_value=500, max_value=100_000, step=1000, value=20_000, format="%i")
+    n_sims = st.number_input("Nb de simulations",
+                         min_value=1, max_value=50000,
+                         value=10000, step=1000)        # tous INT
 with colB:
-    years = st.slider("Horizon (années)", min_value=1, max_value=50, value=35, step=1)
+    years  = st.number_input("Horizon (années)",
+                         min_value=1, max_value=60,
+                         value=35, step=1)              # tous INT
 with colC:
-    weekly_contribution = st.number_input("DCA hebdo (€)", min_value=0.0, value=100.0, step=10.0)
+    weekly_contribution = st.number_input("DCA hebdo (€)",
+                                      min_value=0.0,
+                                      value=100.0, step=10.0)   # tous FLOAT
 with colD:
     start_value = st.number_input(
     "Capital initial (€)",
@@ -50,7 +56,10 @@ with colD:
 )
 
 with colE:
-    inflation_annual = st.number_input("Inflation annuelle (%)", min_value=0.0, max_value=10.0, value=2.0, step=0.5) / 100.0
+    inflation_pct = st.number_input("Inflation moyenne (%)",
+                                min_value=0.0,
+                                value=2.0, step=0.1)           # tous FLOAT
+inflation_annual = inflation_pct / 100.0
 
 scenario_label = st.selectbox("Scénario de crises", ["Doux (crises rares/courtes)","Central (réaliste)","Stress (fréquentes/longues/fortes)"])
 show_sample_paths = st.checkbox("Afficher des trajectoires individuelles (échantillon)", value=True)
