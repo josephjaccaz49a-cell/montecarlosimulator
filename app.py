@@ -93,8 +93,9 @@ st.dataframe(
                   sigma_pct=(assets["sigma"]*100).round(2),
                   div_pct=(assets["dividend_yield"]*100).round(2)
     )[["name","weight_pct","mu_pct","sigma_pct","div_pct"]],
-    use_container_width=True
+    width="stretch"
 )
+
 
 # ================== Fonctions utilitaires ==================
 def annual_to_week_sigma(sigma_annual, dt): return sigma_annual * np.sqrt(dt)
