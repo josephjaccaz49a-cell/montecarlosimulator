@@ -113,14 +113,18 @@ if not np.isclose(assets["weight"].sum(), 1.0):
 
 # Résumé portefeuille
 st.subheader("🧺 Portfolio actuel")
-st.dataframe(
-    assets.assign(weight_pct=(assets["weight"]*100).round(1),
-                  mu_pct=(assets["mu"]*100).round(2),
-                  sigma_pct=(assets["sigma"]*100).round(2),
-                  div_pct=(assets["dividend_yield"]*100).round(2)
-    )[["name","weight_pct","mu_pct","sigma_pct","div_pct"]],
-    width="stretch"
-)
+
+df_portfolio = assets.assign(
+    Poids=(assets["weight"]*100).round(1).astype(str) + " %",
+    Rendement=(assets["mu"]*100).round(2).astype(str) + " %",
+    Volatilité=(assets["sigma"]*100).round(2).astype(str) + " %",
+    Dividende=(assets["dividend_yield"]*100).round(2).astype(str) + " %"
+)[["name", "Poids", "Rendement", "Volatilité", "Dividende"]]
+
+st.dataframe(df_portfolio.rename(columns={"name": "Actif"}), width="stretch")
+
+st.caption("💡 Poids = proportion du portefeuille. Rendement = espérance de croissance annuelle. "
+           "Volatilité = amplitude moyenne des variations. Dividende = rendement versé chaque année.")
 
 
 # ================== Fonctions utilitaires ==================
