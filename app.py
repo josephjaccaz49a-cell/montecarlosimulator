@@ -37,7 +37,7 @@ colA, colB, colC, colD, colE = st.columns(5)
 with colA:
     n_sims = st.number_input("Nb de simulations",
                          min_value=1, max_value=50000,
-                         value=10000, step=1000)        # tous INT
+                         value=10000, step=100)        # tous INT
 with colB:
     years  = st.number_input("Horizon (années)",
                          min_value=1, max_value=60,
