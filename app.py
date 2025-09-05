@@ -7,12 +7,10 @@ import streamlit as st
 
 st.set_page_config(page_title="Simulateur Monte Carlo de Jojo", layout="wide")
 
-st.title("🚀 Simulateur Monte Carlo multi-actifs de Jojo")
+st.title("🚀 Simulateur de Monte Carlo multi-actifs de Jojo")
 
 st.markdown("""
-Bienvenue dans **le simulateur Monte Carlo de Jojo** 🎲📈
-
-Ici, on utilise une **simulation de Monte Carlo** : ça veut dire qu’au lieu de prévoir un seul futur, 
+Bienvenue, ici, on utilise la méthode de Monte Carlo qui est une méthode algorithmique via de l'aléatoire : ça veut dire qu’au lieu de prévoir un seul futur, 
 on génère des dizaines de milliers de futurs possibles, avec du hasard dans les rendements, l’inflation et les crises.  
 On peut ensuite voir la zone la plus probable (80 % des cas), un scénario central, 
 et des scénarios défavorables/favorables.  
@@ -35,9 +33,6 @@ pourrait en faire, ensemble.
 
 ✊ Bref, un outil pour apprendre, pas pour vendre du rêve.
 """)
-
-
-
 
 # ================== UI : Paramètres ==================
 colA, colB, colC, colD, colE = st.columns(5)
