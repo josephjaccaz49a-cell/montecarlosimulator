@@ -503,7 +503,7 @@ if st.button("🎬 Lancer la simulation"):
             matelas_path, "Matelas (0%)",
             sample_paths=(pt_nom[:, np.random.choice(pt_nom.shape[1],
                             size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
-                          if show_sample_paths else None),
+                          #if show_sample_paths else None),
             y_title="€ (nominal)",
         )
     
