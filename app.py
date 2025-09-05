@@ -594,7 +594,6 @@ with col_msg:
     - Lignes noires/grises = **Livret A** (intérêts 1x/an) vs **Matelas** (0 %).  
     - Fines lignes = quelques trajectoires réelles simulées (pour voir l’incertitude).
     """)
-    st.success("✅ Simulation terminée")
 
 else:
     st.info("Choisis tes paramètres puis clique sur **Lancer la simulation**.")
