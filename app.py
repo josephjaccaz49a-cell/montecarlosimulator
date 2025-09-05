@@ -363,235 +363,252 @@ def run_monte_carlo(n_sims, years, weekly_contribution, start_value, inflation_a
     )
 
 # ================== Lancer la simulation ==================
-col_btn, col_msg = st.columns([1,3])
+if "run" not in st.session_state:
+    st.session_state.run = False
+
+col_btn, col_msg, col_reset = st.columns([1, 3, 1])
+
 with col_btn:
-    run_clicked = st.button("🎬 Lancer la simulation")
+    clicked = st.button("🎬 Lancer la simulation")
 
+with col_reset:
+    reset = st.button("🔄 Réinitialiser")
+
+# Update state
+if clicked:
+    st.session_state.run = True
+if reset:
+    st.session_state.run = False
+
+# Success badge beside the button
 with col_msg:
-    if run_clicked:
-        st.success("✅ Simulation terminée")
+    if st.session_state.run:
+        st.success("✅ Simulation prête")
 
-with st.spinner("Ça turbine fort…"):
-    res = run_monte_carlo(
-        n_sims, years, weekly_contribution, start_value, inflation_annual,
-        index_contrib_to_inflation, assets, _scn, use_custom_corr
-    )
-
-dates   = res["dates"]
-pt_nom  = res["path_total_nominal"]
-pt_real = res["path_total_real"]
-
-# -------- Percentiles --------
-def bands(arr2d, idx_dates):
-    df = pd.DataFrame(arr2d, index=idx_dates)
-    return df.quantile(0.10, axis=1), df.quantile(0.50, axis=1), df.quantile(0.90, axis=1)
-
-q10_nom,  q50_nom,  q90_nom  = bands(pt_nom,  dates)
-q10_real, q50_real, q90_real = bands(pt_real, dates)
-
-# -------- Baselines: Livret A (intérêt annuel) + Matelas --------
-weeks = int(52 * years)
-livret_rate = 0.017  # 1,7%/an
-
-livret_path_step = np.zeros(weeks + 1, dtype=float)
-livret_path_step[0] = start_value
-
-matelas_path = np.zeros(weeks + 1, dtype=float)
-matelas_path[0] = start_value
-
-dt = 1/52.0
-infl_w = (1 + inflation_annual)**dt - 1
-deflator = (1 + infl_w) ** np.arange(0, weeks + 1)
-
-for t in range(1, weeks + 1):
-    c = weekly_contribution * ((1 + infl_w)**(t-1)) if index_contrib_to_inflation else weekly_contribution
-    matelas_path[t] = matelas_path[t-1] + c
-
-    balance = livret_path_step[t-1] + c
-    if (t % 52) == 0:  # crédit 1x/an
-        balance *= (1 + livret_rate)
-    livret_path_step[t] = balance
-
-livret_real_step = livret_path_step / deflator
-matelas_real     = matelas_path     / deflator
-
-# ========= helper Plotly =========
-def plot_percentiles_plotly(
-    dates, q10, q50, q90,
-    base1, base1_label,   # Livret A
-    base2, base2_label,   # Matelas
-    sample_paths=None,
-    y_title="€",
-    subtitle="",
-    color_livret="#E63946",   # rouge vif
-    color_matelas="#A0A0A0"   # gris clair
-):
-    x = pd.to_datetime(dates)
-    euro_ht = "<b>%{fullData.name}</b><br>%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
-
-    fig = go.Figure()
-
-    # Fourchette 80 % (un seul label dans la légende)
-    fig.add_trace(go.Scatter(
-        x=x, y=q90.values, name="Fourchette probable (80 %)",
-        line=dict(width=0), hoverinfo="skip", showlegend=False
-    ))
-    fig.add_trace(go.Scatter(
-        x=x, y=q10.values, name="Fourchette probable (80 %)",
-        fill='tonexty', mode='lines', line=dict(width=0),
-        fillcolor="rgba(100, 149, 237, 0.25)",  # bleu pâle sympa
-        hoverinfo="skip", showlegend=True
-    ))
-
-    # Courbes centrales
-    fig.add_trace(go.Scatter(
-        x=x, y=q50.values, name="Médiane (50/50)", mode='lines',
-        hovertemplate=euro_ht, line=dict(width=2.2, color="#1f77b4")
-    ))
-    fig.add_trace(go.Scatter(
-        x=x, y=q10.values, name="P10 (90 % au-dessus)", mode='lines',
-        line=dict(dash='dash', color="#9467bd"), hovertemplate=euro_ht
-    ))
-    fig.add_trace(go.Scatter(
-        x=x, y=q90.values, name="P90 (90 % en dessous)", mode='lines',
-        line=dict(dash='dash', color="#ff7f0e"), hovertemplate=euro_ht
-    ))
-
-    # Baselines
-    fig.add_trace(go.Scatter(
-        x=x, y=base1, name=base1_label, mode='lines',
-        line=dict(color=color_livret, width=3),
-        hovertemplate=euro_ht
-    ))
-    fig.add_trace(go.Scatter(
-        x=x, y=base2, name=base2_label, mode='lines',
-        line=dict(color=color_matelas, width=2, dash='dot'),
-        hovertemplate=euro_ht
-    ))
-
-    # Trajectoires échantillon
-    if sample_paths is not None and sample_paths.shape[1] > 0:
-        first = True
-        for k in range(sample_paths.shape[1]):
-            fig.add_trace(go.Scatter(
-                x=x, y=sample_paths[:, k], mode='lines',
-                line=dict(width=1), opacity=0.3,
-                name="Trajectoires (échantillon)" if first else None,
-                showlegend=first,
-                hovertemplate=euro_ht if first else "<extra></extra>"
-            ))
-            first = False
-
-    fig.update_layout(
-        dragmode="pan",
-        uirevision="jojo_zoom",
-        hovermode="x unified",
-        xaxis=dict(showspikes=True, spikemode="across", spikesnap="cursor"),
-        yaxis=dict(tickformat=",", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
-        margin=dict(l=10, r=10, t=48, b=60),
-        title=dict(text=subtitle, x=0, y=0.98),
-        legend=dict(
-            orientation="h",
-            yanchor="top", y=-0.25,
-            xanchor="center", x=0.5,
-            font=dict(size=11)
+# ---- SIMULATION: guard everything below with this ----
+if st.session_state.run:
+    with st.spinner("Ça turbine fort…"):
+        res = run_monte_carlo(
+            n_sims, years, weekly_contribution, start_value, inflation_annual,
+            index_contrib_to_inflation, assets, _scn, use_custom_corr
         )
-    )
 
-    st.plotly_chart(fig, use_container_width=True, height=420)
-    return fig
-
-
-# ================== GRAPHIQUES (onglets responsive) ==================
-tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
-
-with tabs[0]:
-    fig_nom = plot_percentiles_plotly(
-        dates,
-        q10_nom, q50_nom, q90_nom,
-        livret_path_step, "Livret A (nominal, intérêts annuels)",
-        matelas_path, "Matelas (0%)",
-        #sample_paths=(pt_nom[:, np.random.choice(pt_nom.shape[1],
-        #                size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
-        #              if show_sample_paths else None
-        #             ),
-        y_title="€ (nominal)",
-    )
-
-with tabs[1]:
-    fig_real = plot_percentiles_plotly(
-        dates,
-        q10_real, q50_real, q90_real,
-        livret_real_step, "Livret A (réel)",
-        matelas_real, "Matelas (0%, réel)",
-        #sample_paths=(pt_real[:, np.random.choice(pt_real.shape[1],
-        #                size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
-        #              if show_sample_paths else None),
-        y_title="€ constants (pouvoir d’achat)",
-    )
-
-
-# === Exports (PNG + CSV) ===
-import io, zipfile
-
-# PNG : on exporte les deux onglets dans un ZIP (nécessite 'kaleido')
-try:
-    buf_zip = io.BytesIO()
-    with zipfile.ZipFile(buf_zip, "w") as zf:
-        png_nom  = pio.to_image(fig_nom,  format="png", scale=2)
-        png_real = pio.to_image(fig_real, format="png", scale=2)
-        zf.writestr("simulation_nominal.png",  png_nom)
-        zf.writestr("simulation_reel.png",     png_real)
+    dates   = res["dates"]
+    pt_nom  = res["path_total_nominal"]
+    pt_real = res["path_total_real"]
+    
+    # -------- Percentiles --------
+    def bands(arr2d, idx_dates):
+        df = pd.DataFrame(arr2d, index=idx_dates)
+        return df.quantile(0.10, axis=1), df.quantile(0.50, axis=1), df.quantile(0.90, axis=1)
+    
+    q10_nom,  q50_nom,  q90_nom  = bands(pt_nom,  dates)
+    q10_real, q50_real, q90_real = bands(pt_real, dates)
+    
+    # -------- Baselines: Livret A (intérêt annuel) + Matelas --------
+    weeks = int(52 * years)
+    livret_rate = 0.017  # 1,7%/an
+    
+    livret_path_step = np.zeros(weeks + 1, dtype=float)
+    livret_path_step[0] = start_value
+    
+    matelas_path = np.zeros(weeks + 1, dtype=float)
+    matelas_path[0] = start_value
+    
+    dt = 1/52.0
+    infl_w = (1 + inflation_annual)**dt - 1
+    deflator = (1 + infl_w) ** np.arange(0, weeks + 1)
+    
+    for t in range(1, weeks + 1):
+        c = weekly_contribution * ((1 + infl_w)**(t-1)) if index_contrib_to_inflation else weekly_contribution
+        matelas_path[t] = matelas_path[t-1] + c
+    
+        balance = livret_path_step[t-1] + c
+        if (t % 52) == 0:  # crédit 1x/an
+            balance *= (1 + livret_rate)
+        livret_path_step[t] = balance
+    
+    livret_real_step = livret_path_step / deflator
+    matelas_real     = matelas_path     / deflator
+    
+    # ========= helper Plotly =========
+    def plot_percentiles_plotly(
+        dates, q10, q50, q90,
+        base1, base1_label,   # Livret A
+        base2, base2_label,   # Matelas
+        sample_paths=None,
+        y_title="€",
+        subtitle="",
+        color_livret="#E63946",   # rouge vif
+        color_matelas="#A0A0A0"   # gris clair
+    ):
+        x = pd.to_datetime(dates)
+        euro_ht = "<b>%{fullData.name}</b><br>%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+    
+        fig = go.Figure()
+    
+        # Fourchette 80 % (un seul label dans la légende)
+        fig.add_trace(go.Scatter(
+            x=x, y=q90.values, name="Fourchette probable (80 %)",
+            line=dict(width=0), hoverinfo="skip", showlegend=False
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=q10.values, name="Fourchette probable (80 %)",
+            fill='tonexty', mode='lines', line=dict(width=0),
+            fillcolor="rgba(100, 149, 237, 0.25)",  # bleu pâle sympa
+            hoverinfo="skip", showlegend=True
+        ))
+    
+        # Courbes centrales
+        fig.add_trace(go.Scatter(
+            x=x, y=q50.values, name="Médiane (50/50)", mode='lines',
+            hovertemplate=euro_ht, line=dict(width=2.2, color="#1f77b4")
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=q10.values, name="P10 (90 % au-dessus)", mode='lines',
+            line=dict(dash='dash', color="#9467bd"), hovertemplate=euro_ht
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=q90.values, name="P90 (90 % en dessous)", mode='lines',
+            line=dict(dash='dash', color="#ff7f0e"), hovertemplate=euro_ht
+        ))
+    
+        # Baselines
+        fig.add_trace(go.Scatter(
+            x=x, y=base1, name=base1_label, mode='lines',
+            line=dict(color=color_livret, width=3),
+            hovertemplate=euro_ht
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=base2, name=base2_label, mode='lines',
+            line=dict(color=color_matelas, width=2, dash='dot'),
+            hovertemplate=euro_ht
+        ))
+    
+        # Trajectoires échantillon
+        if sample_paths is not None and sample_paths.shape[1] > 0:
+            first = True
+            for k in range(sample_paths.shape[1]):
+                fig.add_trace(go.Scatter(
+                    x=x, y=sample_paths[:, k], mode='lines',
+                    line=dict(width=1), opacity=0.3,
+                    name="Trajectoires (échantillon)" if first else None,
+                    showlegend=first,
+                    hovertemplate=euro_ht if first else "<extra></extra>"
+                ))
+                first = False
+    
+        fig.update_layout(
+            dragmode="pan",
+            uirevision="jojo_zoom",
+            hovermode="x unified",
+            xaxis=dict(showspikes=True, spikemode="across", spikesnap="cursor"),
+            yaxis=dict(tickformat=",", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
+            margin=dict(l=10, r=10, t=48, b=60),
+            title=dict(text=subtitle, x=0, y=0.98),
+            legend=dict(
+                orientation="h",
+                yanchor="top", y=-0.25,
+                xanchor="center", x=0.5,
+                font=dict(size=11)
+            )
+        )
+    
+        st.plotly_chart(fig, use_container_width=True, height=420)
+        return fig
+    
+    
+    # ================== GRAPHIQUES (onglets responsive) ==================
+    tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
+    
+    with tabs[0]:
+        fig_nom = plot_percentiles_plotly(
+            dates,
+            q10_nom, q50_nom, q90_nom,
+            livret_path_step, "Livret A (nominal, intérêts annuels)",
+            matelas_path, "Matelas (0%)",
+            #sample_paths=(pt_nom[:, np.random.choice(pt_nom.shape[1],
+            #                size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
+            #              if show_sample_paths else None
+            #             ),
+            y_title="€ (nominal)",
+        )
+    
+    with tabs[1]:
+        fig_real = plot_percentiles_plotly(
+            dates,
+            q10_real, q50_real, q90_real,
+            livret_real_step, "Livret A (réel)",
+            matelas_real, "Matelas (0%, réel)",
+            #sample_paths=(pt_real[:, np.random.choice(pt_real.shape[1],
+            #                size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
+            #              if show_sample_paths else None),
+            y_title="€ constants (pouvoir d’achat)",
+        )
+    
+    
+    # === Exports (PNG + CSV) ===
+    import io, zipfile
+    
+    # PNG : on exporte les deux onglets dans un ZIP (nécessite 'kaleido')
+    try:
+        buf_zip = io.BytesIO()
+        with zipfile.ZipFile(buf_zip, "w") as zf:
+            png_nom  = pio.to_image(fig_nom,  format="png", scale=2)
+            png_real = pio.to_image(fig_real, format="png", scale=2)
+            zf.writestr("simulation_nominal.png",  png_nom)
+            zf.writestr("simulation_reel.png",     png_real)
+        st.download_button(
+            label="📥 Télécharger les graphiques (ZIP)",
+            data=buf_zip.getvalue(),
+            file_name="simu_jojo_graphs.zip",
+            mime="application/zip",
+        )
+    except Exception as e:
+        st.caption("ℹ️ Export PNG indisponible (module *kaleido* manquant sur l’environnement).")
+    
+    # CSV (percentiles + baselines)
+    export_df = pd.DataFrame({
+        "date": dates,
+        "q10_nom":  q10_nom.values,
+        "q50_nom":  q50_nom.values,
+        "q90_nom":  q90_nom.values,
+        "q10_real": q10_real.values,
+        "q50_real": q50_real.values,
+        "q90_real": q90_real.values,
+        "livret_nom":  livret_path_step,
+        "matelas_nom": matelas_path,
+        "livret_real": livret_real_step,
+        "matelas_real": matelas_real,
+    })
     st.download_button(
-        label="📥 Télécharger les graphiques (ZIP)",
-        data=buf_zip.getvalue(),
-        file_name="simu_jojo_graphs.zip",
-        mime="application/zip",
+        label="📥 Télécharger les courbes (CSV)",
+        data=export_df.to_csv(index=False).encode("utf-8"),
+        file_name="simulation_jojo_percentiles.csv",
+        mime="text/csv",
     )
-except Exception as e:
-    st.caption("ℹ️ Export PNG indisponible (module *kaleido* manquant sur l’environnement).")
-
-# CSV (percentiles + baselines)
-export_df = pd.DataFrame({
-    "date": dates,
-    "q10_nom":  q10_nom.values,
-    "q50_nom":  q50_nom.values,
-    "q90_nom":  q90_nom.values,
-    "q10_real": q10_real.values,
-    "q50_real": q50_real.values,
-    "q90_real": q90_real.values,
-    "livret_nom":  livret_path_step,
-    "matelas_nom": matelas_path,
-    "livret_real": livret_real_step,
-    "matelas_real": matelas_real,
-})
-st.download_button(
-    label="📥 Télécharger les courbes (CSV)",
-    data=export_df.to_csv(index=False).encode("utf-8"),
-    file_name="simulation_jojo_percentiles.csv",
-    mime="text/csv",
-)
-
-# ===== Synthèse métriques =====
-finals_nom  = res["finals_nom"]
-finals_real = res["finals_real"]
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("Médiane (réel)", f"{finals_real.median():,.0f} €")
-    st.metric("Taux composé médian (réel)", "N/A" if np.isnan(res["cagr_real"]) else f"{res['cagr_real']*100:.2f}%/an")
-with col2:
-    st.metric("Médiane (nominal)", f"{finals_nom.median():,.0f} €")
-    st.metric("Taux composé médian (nominal)", "N/A" if np.isnan(res["cagr_nom"]) else f"{res['cagr_nom']*100:.2f}%/an")
-with col3:
-    st.metric("Proportion de runs avec crise", f"{res['prop_with_crisis']*100:.1f}%")
-    st.metric("Nb de simulations", f"{int(n_sims):,}")
-
-st.markdown("""
-👉 **Comment lire :**  
-- **Haut** : valeur **nominale** (ce que tu vois sur le compte).  
-- **Bas** : valeur en **euros constants** (corrigée inflation).  
-- **Zone grisée** = 80 % des cas. **Médiane** = scénario central.  
-- Lignes noires/grises = **Livret A** (intérêts 1x/an) vs **Matelas** (0 %).  
-- Fines lignes = quelques trajectoires réelles simulées (pour voir l’incertitude).
-""")
-
+    
+    # ===== Synthèse métriques =====
+    finals_nom  = res["finals_nom"]
+    finals_real = res["finals_real"]
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Médiane (réel)", f"{finals_real.median():,.0f} €")
+        st.metric("Taux composé médian (réel)", "N/A" if np.isnan(res["cagr_real"]) else f"{res['cagr_real']*100:.2f}%/an")
+    with col2:
+        st.metric("Médiane (nominal)", f"{finals_nom.median():,.0f} €")
+        st.metric("Taux composé médian (nominal)", "N/A" if np.isnan(res["cagr_nom"]) else f"{res['cagr_nom']*100:.2f}%/an")
+    with col3:
+        st.metric("Proportion de runs avec crise", f"{res['prop_with_crisis']*100:.1f}%")
+        st.metric("Nb de simulations", f"{int(n_sims):,}")
+    
+    st.markdown("""
+    👉 **Comment lire :**  
+    - **Haut** : valeur **nominale** (ce que tu vois sur le compte).  
+    - **Bas** : valeur en **euros constants** (corrigée inflation).  
+    - **Zone grisée** = 80 % des cas. **Médiane** = scénario central.  
+    - Lignes noires/grises = **Livret A** (intérêts 1x/an) vs **Matelas** (0 %).  
+    - Fines lignes = quelques trajectoires réelles simulées (pour voir l’incertitude).
+    """)
+else:
+    st.info("Choisis tes paramètres puis clique sur **Lancer la simulation**.")
