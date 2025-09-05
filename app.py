@@ -413,7 +413,7 @@ if st.button("🎬 Lancer la simulation"):
         sample_paths=None,
         y_title="€",
         subtitle="",
-        color_livret="#FFD166",   # jaune qui pop en dark
+        color_livret="#E63946",   # rouge vif
         color_matelas="#A0A0A0"   # gris clair
     ):
         x = pd.to_datetime(dates)
@@ -421,29 +421,30 @@ if st.button("🎬 Lancer la simulation"):
     
         fig = go.Figure()
     
-        # Bande 80% (pas de hover, pas de nom pour éviter le spam)
+        # Fourchette 80 % (un seul label dans la légende)
         fig.add_trace(go.Scatter(
-            x=x, y=q90.values, name="Fourchette probable (80%)",
+            x=x, y=q90.values, name="Fourchette probable (80 %)",
             line=dict(width=0), hoverinfo="skip", showlegend=False
         ))
         fig.add_trace(go.Scatter(
-            x=x, y=q10.values, name="Fourchette probable (80%)",
+            x=x, y=q10.values, name="Fourchette probable (80 %)",
             fill='tonexty', mode='lines', line=dict(width=0),
-            hoverinfo="skip", showlegend=True, opacity=0.23
+            fillcolor="rgba(100, 149, 237, 0.25)",  # bleu pâle sympa
+            hoverinfo="skip", showlegend=True
         ))
     
         # Courbes centrales
         fig.add_trace(go.Scatter(
             x=x, y=q50.values, name="Médiane (50/50)", mode='lines',
-            hovertemplate=euro_ht, line=dict(width=2.2)
+            hovertemplate=euro_ht, line=dict(width=2.2, color="#1f77b4")
         ))
         fig.add_trace(go.Scatter(
             x=x, y=q10.values, name="P10 (90 % au-dessus)", mode='lines',
-            line=dict(dash='dash'), hovertemplate=euro_ht
+            line=dict(dash='dash', color="#9467bd"), hovertemplate=euro_ht
         ))
         fig.add_trace(go.Scatter(
             x=x, y=q90.values, name="P90 (90 % en dessous)", mode='lines',
-            line=dict(dash='dash'), hovertemplate=euro_ht
+            line=dict(dash='dash', color="#ff7f0e"), hovertemplate=euro_ht
         ))
     
         # Baselines
@@ -458,7 +459,7 @@ if st.button("🎬 Lancer la simulation"):
             hovertemplate=euro_ht
         ))
     
-        # Trajectoires échantillon (hover discret)
+        # Trajectoires échantillon
         if sample_paths is not None and sample_paths.shape[1] > 0:
             first = True
             for k in range(sample_paths.shape[1]):
@@ -487,7 +488,6 @@ if st.button("🎬 Lancer la simulation"):
             )
         )
     
-        # important sur mobile : on laisse Streamlit gérer la largeur
         st.plotly_chart(fig, use_container_width=True, height=420)
         return fig
 
