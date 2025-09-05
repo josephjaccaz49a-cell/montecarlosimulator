@@ -415,51 +415,96 @@ if st.button("🎬 Lancer la simulation"):
     matelas_real = matelas_path / deflator
 
 
-    # ===== Graphiques (1 fenêtre, 2 sous-graphes) =====
-    fig, axes = plt.subplots(2, 1, figsize=(11, 7), sharex=True)
+# ---- en haut du fichier (imports) ----
+import plotly.graph_objects as go
+import plotly.io as pio
+pio.templates.default = "plotly_white"
+st.set_page_config(page_title="Simulateur Monte Carlo", layout="wide")
 
-    # (1) Nominal
-    ax = axes[0]
-    ax.fill_between(dates, q10_nom.values, q90_nom.values, alpha=0.20, label="Fourchette probable (80%)")
-    ax.plot(dates, q50_nom.values, label="Scénario central (50/50)")
-    ax.plot(dates, q10_nom.values, linestyle="--", linewidth=1, label="Scénario défavorable (90 % de chances d’être au-dessus)")
-    ax.plot(dates, q90_nom.values, linestyle="--", linewidth=1, label="Scénario favorable (90 % de chances d’être en dessous)")
-    ax.plot(dates, livret_path_step, color="black", label="Livret A (intérêts crédités 1×/an)")
-    ax.plot(dates, matelas_path, color="grey", linestyle=":", label="Matelas (0%)")
-    ax.set_ylabel("€ (nominal)")
-    ax.set_title("Évolution nominale")
+# ========= helper pour un graphe Plotly =========
+def plot_percentiles_plotly(dates, q10, q50, q90, base1, base1_label, base2, base2_label,
+                            sample_paths=None, y_title="€", subtitle=""):
+    x = pd.to_datetime(dates)
 
-    # (2) Réel
-    ax = axes[1]
-    ax.fill_between(dates, q10_real.values, q90_real.values, alpha=0.20,
-                    label="Fourchette probable (80 % des cas)")
-    ax.plot(dates, q50_real.values, label="Scénario central (50/50)")
-    ax.plot(dates, q10_real.values, linestyle="--", linewidth=1,
-            label="Scénario défavorable (90 % de chances d’être au-dessus)")
-    ax.plot(dates, q90_real.values, linestyle="--", linewidth=1,
-            label="Scénario favorable (90 % de chances d’être en dessous)")
-    ax.plot(dates, livret_real_step, color="black", label="Livret A (réel, intérêts 1×/an)")
-    ax.plot(dates, matelas_real, color="grey", linestyle=":", label="Matelas (0 %, réel)")
-    ax.set_xlabel("Date"); ax.set_ylabel("€ constants (pouvoir d’achat)")
-    ax.set_title("Évolution corrigée de l’inflation")
+    fig = go.Figure()
 
+    # Fourchette 80% (q10–q90)
+    fig.add_trace(go.Scatter(
+        x=x, y=q90.values, name="Fourchette probable (80%)",
+        line=dict(width=0), hoverinfo="skip"
+    ))
+    fig.add_trace(go.Scatter(
+        x=x, y=q10.values, name="Fourchette probable (80%)",
+        fill='tonexty', mode='lines', line=dict(width=0),
+        hoverinfo="skip", showlegend=True
+    ))
 
-    # Trajectoires individuelles (mêmes indices pour haut/bas)
-    if show_sample_paths and n_sample_paths > 0:
-       n_total = pt_nom.shape[1]
-       k = min(n_sample_paths, n_total)  # borne par le nb de runs
-       idx = np.random.choice(n_total, size=k, replace=False)
-       for i, k in enumerate(idx):
-           label = "Trajectoires (échantillon)" if i == 0 else None
-           axes[0].plot(dates, pt_nom[:, k], linewidth=0.7, alpha=0.35, label=label)
-           axes[1].plot(dates, pt_real[:, k], linewidth=0.7, alpha=0.35)
+    # Courbes centrales
+    fig.add_trace(go.Scatter(x=x, y=q50.values, name="Médiane (50/50)", mode='lines'))
+    fig.add_trace(go.Scatter(x=x, y=q10.values, name="P10", mode='lines',
+                             line=dict(dash='dash')))
+    fig.add_trace(go.Scatter(x=x, y=q90.values, name="P90", mode='lines',
+                             line=dict(dash='dash')))
 
-    for ax in axes:
-        ax.legend(loc="best", title="Lecture :")
-    fig.suptitle(f"Monte Carlo — DCA {weekly_contribution:.0f} €/sem | Horizon {years} ans | Scénario: {scenario_label}", y=0.98)
-    fig.tight_layout()
+    # Baselines
+    fig.add_trace(go.Scatter(x=x, y=base1, name=base1_label, mode='lines',
+                             line=dict(color='black')))
+    fig.add_trace(go.Scatter(x=x, y=base2, name=base2_label, mode='lines',
+                             line=dict(color='gray', dash='dot')))
 
-    st.pyplot(fig)
+    # Trajectoires échantillon (facultatif)
+    if sample_paths is not None and sample_paths.shape[1] > 0:
+        # une seule légende pour éviter le spam
+        first = True
+        for k in range(sample_paths.shape[1]):
+            fig.add_trace(go.Scatter(
+                x=x, y=sample_paths[:, k], mode='lines',
+                line=dict(width=1), opacity=0.35,
+                name="Trajectoires (échantillon)" if first else None,
+                showlegend=first
+            ))
+            first = False
+
+    fig.update_layout(
+        margin=dict(l=10, r=10, t=40, b=10),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
+        yaxis_title=y_title,
+        xaxis_title="Date",
+        title=subtitle,
+    )
+    # Important : responsive sur mobile
+    st.plotly_chart(fig, width="stretch", height=420, use_container_width=False)
+    return fig
+
+# ================== GRAPHIQUES (onglets responsive) ==================
+tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
+
+with tabs[0]:
+    fig_nom = plot_percentiles_plotly(
+        dates,
+        q10_nom, q50_nom, q90_nom,
+        livret_path, "Livret A (nominal)",
+        matelas_path, "Matelas (0%)",
+        sample_paths = (pt_nom[:, np.random.choice(pt_nom.shape[1], 
+                        size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
+                        if show_sample_paths else None),
+        y_title="€ (nominal)",
+        subtitle="Évolution nominale"
+    )
+
+with tabs[1]:
+    fig_real = plot_percentiles_plotly(
+        dates,
+        q10_real, q50_real, q90_real,
+        livret_real, "Livret A (réel)",
+        matelas_real, "Matelas (0%, réel)",
+        sample_paths = (pt_real[:, np.random.choice(pt_real.shape[1], 
+                        size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
+                        if show_sample_paths else None),
+        y_title="€ constants (pouvoir d’achat)",
+        subtitle="Évolution corrigée de l’inflation"
+    )
+
 
    # === Exports (PNG + CSV) ===
     import io
