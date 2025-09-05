@@ -374,8 +374,6 @@ with col_btn:
 # Update state
 if clicked:
     st.session_state.run = True
-if reset:
-    st.session_state.run = False
 
 # Success badge beside the button
 with col_msg:
