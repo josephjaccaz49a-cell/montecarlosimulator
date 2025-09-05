@@ -79,34 +79,45 @@ use_custom_corr = st.checkbox(
 )
 
 
-# ================== Scénarios ==================
+# ==== Scénarios ====
 SCENARIOS = {
-    "🌱 Doux — crises rares (25%), peu intenses (-4%/an), vol×1.3, courtes (0.5–2 ans)": dict(
+    "doux": dict(
+        label="🌱 Doux — crises rares (25%), peu intenses (-4%/an), vol×1.3, courtes (0.5–2 ans)",
         p_crisis=0.25, crisis_mu_shift=-0.04, crisis_sigma_multiplier=1.3,
         short_share=0.70, short_range=(0.5,2.0),
-        mid_share=0.25,   mid_range=(2.0,4.0),
-        long_share=0.05,  long_range=(4.0,6.0),
+        mid_share=0.25,  mid_range=(2.0,4.0),
+        long_share=0.05, long_range=(4.0,6.0),
         inflation_annual=None
     ),
-
-    "⚖️ Central — crises modérées (45%), réalistes (-6%/an), vol×1.5, durées 0.5–10 ans": dict(
+    "central": dict(
+        label="⚖️ Central — crises modérées (45%), réalistes (-6%/an), vol×1.5, durées 0.5–10 ans",
         p_crisis=0.45, crisis_mu_shift=-0.06, crisis_sigma_multiplier=1.5,
         short_share=0.60, short_range=(0.5,2.0),
-        mid_share=0.30,   mid_range=(2.0,5.0),
-        long_share=0.10,  long_range=(5.0,10.0),
+        mid_share=0.30,  mid_range=(2.0,5.0),
+        long_share=0.10, long_range=(5.0,10.0),
         inflation_annual=None
     ),
-
-    "🔥 Stress — crises fréquentes (60%), sévères (-10%/an), vol×1.7, longues (0.5–12 ans), inflation 3%": dict(
+    "stress": dict(
+        label="🔥 Stress — crises fréquentes (60%), sévères (-10%/an), vol×1.7, longues (0.5–12 ans), inflation 3%",
         p_crisis=0.60, crisis_mu_shift=-0.10, crisis_sigma_multiplier=1.7,
         short_share=0.40, short_range=(0.5,2.0),
-        mid_share=0.35,   mid_range=(2.0,6.0),
-        long_share=0.25,  long_range=(6.0,12.0),
+        mid_share=0.35,  mid_range=(2.0,6.0),
+        long_share=0.25, long_range=(6.0,12.0),
         inflation_annual=0.03
     ),
 }
 
-_scn = SCENARIOS[scenario_label]
+# ---- Selectbox basé sur les labels, mapping sûr vers la clé ----
+label_to_key = {v["label"]: k for k, v in SCENARIOS.items()}
+scenario_label = st.selectbox(
+    "Scénario de crises",
+    list(label_to_key.keys()),
+    index=1
+)
+scenario_key = label_to_key[scenario_label]
+_scn = SCENARIOS[scenario_key]
+
+# Si le scénario fixe une inflation, on l’applique
 if _scn["inflation_annual"] is not None:
     inflation_annual = _scn["inflation_annual"]
 
