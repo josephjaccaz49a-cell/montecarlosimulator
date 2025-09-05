@@ -408,137 +408,87 @@ if st.button("🎬 Lancer la simulation"):
     # ========= helper Plotly =========
     def plot_percentiles_plotly(
         dates, q10, q50, q90,
-        base1, base1_label, base2, base2_label,
-        sample_paths=None, y_title="€", subtitle=""
+        base1, base1_label,   # Livret A
+        base2, base2_label,   # Matelas
+        sample_paths=None,
+        y_title="€",
+        subtitle="",
+        color_livret="#FFD166",   # jaune qui pop en dark
+        color_matelas="#A0A0A0"   # gris clair
     ):
-        import plotly.graph_objects as go
-        import pandas as pd
-    
         x = pd.to_datetime(dates)
-        fig = go.Figure()
-        
-        import plotly.io as pio
-        import numpy as np
-        
-    
-        x = pd.to_datetime(dates)
-    
-        # Palette simple & lisible
-        col_band  = "#C7E3F4"  # bande 80%
-        col_med   = "#005BBB"  # médiane (bleu)
-        col_p     = "#7A7A7A"  # p10/p90
-        col_base1 = "#111111"  # livret
-        col_base2 = "#8A8A8A"  # matelas
+        euro_ht = "<b>%{fullData.name}</b><br>%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
     
         fig = go.Figure()
     
-        # Fourchette 80% (q10–q90) -> aplat propre
+        # Bande 80% (pas de hover, pas de nom pour éviter le spam)
         fig.add_trace(go.Scatter(
-            x=x, y=q90.values, mode="lines", line=dict(width=0),
-            hoverinfo="skip", showlegend=False
+            x=x, y=q90.values, name="Fourchette probable (80%)",
+            line=dict(width=0), hoverinfo="skip", showlegend=False
         ))
         fig.add_trace(go.Scatter(
-            x=x, y=q10.values, mode="lines",
-            fill="tonexty", fillcolor=col_band,
-            line=dict(width=0), name="Zone probable (80%)",
-            hoverinfo="skip"
-        ))
-    
-        # Médiane bien visible
-        fig.add_trace(go.Scatter(
-            x=x, y=q50.values, name="Scénario central",
-            mode="lines",
-            line=dict(color=col_med, width=3),
-            hovertemplate="%{x|%d %b %Y}<br><b>%{y:,.0f} €</b><extra></extra>"
+            x=x, y=q10.values, name="Fourchette probable (80%)",
+            fill='tonexty', mode='lines', line=dict(width=0),
+            hoverinfo="skip", showlegend=True, opacity=0.23
         ))
     
-        # P10 / P90 en pointillés légers
+        # Courbes centrales
         fig.add_trace(go.Scatter(
-            x=x, y=q10.values, name="Défavorable (P10)",
-            mode="lines",
-            line=dict(color=col_p, width=1.5, dash="dash"),
-            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+            x=x, y=q50.values, name="Médiane (50/50)", mode='lines',
+            hovertemplate=euro_ht, line=dict(width=2.2)
         ))
         fig.add_trace(go.Scatter(
-            x=x, y=q90.values, name="Favorable (P90)",
-            mode="lines",
-            line=dict(color=col_p, width=1.5, dash="dash"),
-            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+            x=x, y=q10.values, name="P10 (90 % au-dessus)", mode='lines',
+            line=dict(dash='dash'), hovertemplate=euro_ht
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=q90.values, name="P90 (90 % en dessous)", mode='lines',
+            line=dict(dash='dash'), hovertemplate=euro_ht
         ))
     
         # Baselines
         fig.add_trace(go.Scatter(
-            x=x, y=base1, name=base1_label,
-            mode="lines", line=dict(color=col_base1, width=2),
-            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+            x=x, y=base1, name=base1_label, mode='lines',
+            line=dict(color=color_livret, width=3),
+            hovertemplate=euro_ht
         ))
         fig.add_trace(go.Scatter(
-            x=x, y=base2, name=base2_label,
-            mode="lines", line=dict(color=col_base2, width=2, dash="dot"),
-            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+            x=x, y=base2, name=base2_label, mode='lines',
+            line=dict(color=color_matelas, width=2, dash='dot'),
+            hovertemplate=euro_ht
         ))
     
-        # Trajectoires (facultatif) : fines, semi-transparentes, une seule entrée de légende
+        # Trajectoires échantillon (hover discret)
         if sample_paths is not None and sample_paths.shape[1] > 0:
             first = True
             for k in range(sample_paths.shape[1]):
                 fig.add_trace(go.Scatter(
-                    x=x, y=sample_paths[:, k], mode="lines",
-                    line=dict(width=1),
-                    opacity=0.25,
+                    x=x, y=sample_paths[:, k], mode='lines',
+                    line=dict(width=1), opacity=0.3,
                     name="Trajectoires (échantillon)" if first else None,
                     showlegend=first,
-                    hoverinfo="skip"
+                    hovertemplate=euro_ht if first else "<extra></extra>"
                 ))
                 first = False
     
-       # 🔧 Interactions mobile-friendly
         fig.update_layout(
-            dragmode="pan",             # 1 doigt = déplacer
-            uirevision="jojo_zoom",     # conserve le zoom quand Streamlit rerender
+            dragmode="pan",
+            uirevision="jojo_zoom",
             hovermode="x unified",
-            xaxis=dict(
-                showspikes=True, 
-                spikemode="across", 
-                spikesnap="cursor"
-            ),
-            yaxis=dict(
-                tickformat=",", 
-                showgrid=True, 
-                gridcolor="rgba(0,0,0,0.06)"
-            ),
-            margin=dict(l=10, r=10, t=48, b=60),  # marges, plus bas pour la légende
+            xaxis=dict(showspikes=True, spikemode="across", spikesnap="cursor"),
+            yaxis=dict(tickformat=",", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
+            margin=dict(l=10, r=10, t=48, b=60),
             title=dict(text=subtitle, x=0, y=0.98),
             legend=dict(
-                orientation="h",         # horizontale
-                yanchor="top",
-                y=-0.25,                 # décale encore un peu sous le graphe
-                xanchor="center",
-                x=0.5,
+                orientation="h",
+                yanchor="top", y=-0.25,
+                xanchor="center", x=0.5,
                 font=dict(size=11)
-            ),
-            showlegend=False
+            )
         )
-        
-        # Barre d’outils + gestes
-        st.plotly_chart(
-            fig,
-            width="stretch",
-            height=420,
-            config={
-                "displaylogo": False,
-                "displayModeBar": True,                 # montre la toolbar
-                "modeBarButtonsToRemove": [
-                    "select2d","lasso2d","zoomIn2d","zoomOut2d","autoScale2d",
-                    "toggleSpikelines","hoverClosestCartesian","hoverCompareCartesian"
-                ],
-                "modeBarButtonsToAdd": [
-                    "zoom2d","pan2d","resetScale2d"    # boutons essentiels
-                ],
-                "scrollZoom": True,                    # pinch-to-zoom / scroll
-                "doubleClick": "reset"                 # double-tap pour reset
-            }
-        )
+    
+        # important sur mobile : on laisse Streamlit gérer la largeur
+        st.plotly_chart(fig, use_container_width=True, height=420)
         return fig
 
 
