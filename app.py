@@ -371,9 +371,6 @@ col_btn, col_msg, col_reset = st.columns([1, 3, 1])
 with col_btn:
     clicked = st.button("🎬 Lancer la simulation")
 
-with col_reset:
-    reset = st.button("🔄 Réinitialiser")
-
 # Update state
 if clicked:
     st.session_state.run = True
