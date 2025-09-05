@@ -408,16 +408,18 @@ if st.button("🎬 Lancer la simulation"):
     # ========= helper Plotly =========
     def plot_percentiles_plotly(
         dates, q10, q50, q90,
-        base1, base1_label,
-        base2, base2_label,
-        sample_paths=None,
-        y_title="€",
-        subtitle=""
+        base1, base1_label, base2, base2_label,
+        sample_paths=None, y_title="€", subtitle=""
     ):
         import plotly.graph_objects as go
+        import pandas as pd
+    
+        x = pd.to_datetime(dates)
+        fig = go.Figure()
+        
         import plotly.io as pio
         import numpy as np
-        import pandas as pd
+        
     
         x = pd.to_datetime(dates)
     
@@ -490,26 +492,36 @@ if st.button("🎬 Lancer la simulation"):
                 ))
                 first = False
     
-        # Mise en forme mobile-friendly
+       # 🔧 Interactions mobile-friendly
         fig.update_layout(
-            title=dict(text=subtitle, x=0.0, xanchor="left", y=0.95),
-            margin=dict(l=10, r=10, t=48, b=10),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0, font=dict(size=12)),
+            dragmode="pan",            # 1 doigt = déplacer
+            uirevision="jojo_zoom",    # conserve le zoom quand Streamlit rerender
             hovermode="x unified",
-            xaxis=dict(
-                showspikes=True, spikemode="across", spikesnap="cursor", showgrid=False
-            ),
-            yaxis=dict(
-                title=y_title, tickformat=",", showgrid=True, gridcolor="rgba(0,0,0,0.06)"
-            ),
-            font=dict(size=14)
+            xaxis=dict(showspikes=True, spikemode="across", spikesnap="cursor"),
+            yaxis=dict(tickformat=",", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
+            margin=dict(l=10, r=10, t=48, b=10),
+            title=dict(text=subtitle, x=0, y=0.98)
         )
     
-        # Rendu Streamlit (API récente)
-        st.plotly_chart(fig, width="stretch", height=420, config={
-            "displayModeBar": False
-        })
-    
+        # Barre d’outils + gestes
+        st.plotly_chart(
+            fig,
+            width="stretch",
+            height=420,
+            config={
+                "displaylogo": False,
+                "displayModeBar": True,                 # montre la toolbar
+                "modeBarButtonsToRemove": [
+                    "select2d","lasso2d","zoomIn2d","zoomOut2d","autoScale2d",
+                    "toggleSpikelines","hoverClosestCartesian","hoverCompareCartesian"
+                ],
+                "modeBarButtonsToAdd": [
+                    "zoom2d","pan2d","resetScale2d"    # boutons essentiels
+                ],
+                "scrollZoom": True,                    # pinch-to-zoom / scroll
+                "doubleClick": "reset"                 # double-tap pour reset
+            }
+        )
         return fig
 
 
