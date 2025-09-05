@@ -362,96 +362,76 @@ def run_monte_carlo(n_sims, years, weekly_contribution, start_value, inflation_a
 # ================== Lancer la simulation ==================
 if st.button("🎬 Lancer la simulation"):
     with st.spinner("Ça turbine fort…"):
-        res = run_monte_carlo(n_sims, years, weekly_contribution, start_value, inflation_annual,
-                              index_contrib_to_inflation, assets, _scn, use_custom_corr)
+        res = run_monte_carlo(
+            n_sims, years, weekly_contribution, start_value, inflation_annual,
+            index_contrib_to_inflation, assets, _scn, use_custom_corr
+        )
 
-    dates = res["dates"]
-    pt_nom = res["path_total_nominal"]
+    dates   = res["dates"]
+    pt_nom  = res["path_total_nominal"]
     pt_real = res["path_total_real"]
 
-    # Bandes
+    # -------- Percentiles --------
     def bands(arr2d, idx_dates):
         df = pd.DataFrame(arr2d, index=idx_dates)
         return df.quantile(0.10, axis=1), df.quantile(0.50, axis=1), df.quantile(0.90, axis=1)
-    q10_nom, q50_nom, q90_nom = bands(pt_nom, dates)
+
+    q10_nom,  q50_nom,  q90_nom  = bands(pt_nom,  dates)
     q10_real, q50_real, q90_real = bands(pt_real, dates)
 
-    # après avoir récupéré "years" depuis l’UI
+    # -------- Baselines: Livret A (intérêt annuel) + Matelas --------
     weeks = int(52 * years)
-    
-    # -------- Baselines: Livret A (crédit annuel) + Matelas --------
     livret_rate = 0.017  # 1,7%/an
+
     livret_path_step = np.zeros(weeks + 1, dtype=float)
     livret_path_step[0] = start_value
 
-    # Livret A : intérêts crédités 1x/an (PAF), contributions hebdo en escalier
-    livret_rate = 0.017  # 1,7%/an
-    livret_path_step = np.zeros(weeks + 1, dtype=float)
-    livret_path_step[0] = start_value
-    
-    # Matelas (0 %)
     matelas_path = np.zeros(weeks + 1, dtype=float)
     matelas_path[0] = start_value
-    
-    # Inflation weekly (pour la série en réel)
+
     dt = 1/52.0
     infl_w = (1 + inflation_annual)**dt - 1
     deflator = (1 + infl_w) ** np.arange(0, weeks + 1)
-    
+
     for t in range(1, weeks + 1):
-        # Contribution hebdo
         c = weekly_contribution * ((1 + infl_w)**(t-1)) if index_contrib_to_inflation else weekly_contribution
-        # Matelas: juste l'ajout
         matelas_path[t] = matelas_path[t-1] + c
-    
-        # Livret A: ajout hebdo en escalier
+
         balance = livret_path_step[t-1] + c
-    
-        # Si on est sur un anniversaire (t % 52 == 0), on crédite l'intérêt ANNUEL d'un coup
-        if (t % 52) == 0:
+        if (t % 52) == 0:  # crédit 1x/an
             balance *= (1 + livret_rate)
-    
         livret_path_step[t] = balance
-    
-    # Séries en "réel"
+
     livret_real_step = livret_path_step / deflator
-    matelas_real = matelas_path / deflator
+    matelas_real     = matelas_path     / deflator
 
-
-# ========= helper pour un graphe Plotly =========
-    def plot_percentiles_plotly(dates, q10, q50, q90, base1, base1_label, base2, base2_label,
+    # ========= helper Plotly =========
+    def plot_percentiles_plotly(dates, q10, q50, q90,
+                                base1, base1_label, base2, base2_label,
                                 sample_paths=None, y_title="€", subtitle=""):
         x = pd.to_datetime(dates)
-    
         fig = go.Figure()
-    
+
         # Fourchette 80% (q10–q90)
-        fig.add_trace(go.Scatter(
-            x=x, y=q90.values, name="Fourchette probable (80%)",
-            line=dict(width=0), hoverinfo="skip"
-        ))
-        fig.add_trace(go.Scatter(
-            x=x, y=q10.values, name="Fourchette probable (80%)",
-            fill='tonexty', mode='lines', line=dict(width=0),
-            hoverinfo="skip", showlegend=True
-        ))
-    
+        fig.add_trace(go.Scatter(x=x, y=q90.values, name="Fourchette probable (80%)",
+                                 line=dict(width=0), hoverinfo="skip"))
+        fig.add_trace(go.Scatter(x=x, y=q10.values, name="Fourchette probable (80%)",
+                                 fill='tonexty', mode='lines', line=dict(width=0),
+                                 hoverinfo="skip", showlegend=True))
+
         # Courbes centrales
         fig.add_trace(go.Scatter(x=x, y=q50.values, name="Médiane (50/50)", mode='lines'))
-        fig.add_trace(go.Scatter(x=x, y=q10.values, name="P10", mode='lines',
+        fig.add_trace(go.Scatter(x=x, y=q10.values, name="P10 (défavorable)", mode='lines',
                                  line=dict(dash='dash')))
-        fig.add_trace(go.Scatter(x=x, y=q90.values, name="P90", mode='lines',
+        fig.add_trace(go.Scatter(x=x, y=q90.values, name="P90 (favorable)", mode='lines',
                                  line=dict(dash='dash')))
-    
+
         # Baselines
-        fig.add_trace(go.Scatter(x=x, y=base1, name=base1_label, mode='lines',
-                                 line=dict(color='black')))
-        fig.add_trace(go.Scatter(x=x, y=base2, name=base2_label, mode='lines',
-                                 line=dict(color='gray', dash='dot')))
-    
-        # Trajectoires échantillon (facultatif)
+        fig.add_trace(go.Scatter(x=x, y=base1, name=base1_label, mode='lines'))
+        fig.add_trace(go.Scatter(x=x, y=base2, name=base2_label, mode='lines'))
+
+        # Trajectoires échantillon
         if sample_paths is not None and sample_paths.shape[1] > 0:
-            # une seule légende pour éviter le spam
             first = True
             for k in range(sample_paths.shape[1]):
                 fig.add_trace(go.Scatter(
@@ -461,118 +441,113 @@ if st.button("🎬 Lancer la simulation"):
                     showlegend=first
                 ))
                 first = False
-    
+
         fig.update_layout(
-            margin=dict(l=10, r=10, t=40, b=10),
+            margin=dict(l=8, r=8, t=40, b=8),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
             yaxis_title=y_title,
             xaxis_title="Date",
             title=subtitle,
         )
-        # Important : responsive sur mobile
-        st.plotly_chart(fig, width="stretch", height=420, use_container_width=False)
+        # mobile-friendly
+        st.plotly_chart(fig, width="stretch", height=420)
         return fig
-    
+
     # ================== GRAPHIQUES (onglets responsive) ==================
     tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
-    
+
     with tabs[0]:
+        sample_nom = (pt_nom[:, np.random.choice(pt_nom.shape[1],
+                        size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
+                      if show_sample_paths else None)
         fig_nom = plot_percentiles_plotly(
             dates,
             q10_nom, q50_nom, q90_nom,
-            livret_path, "Livret A (nominal)",
+            livret_path_step, "Livret A (nominal, intérêts annuels)",
             matelas_path, "Matelas (0%)",
-            sample_paths = (pt_nom[:, np.random.choice(pt_nom.shape[1], 
-                            size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
-                            if show_sample_paths else None),
+            sample_paths=sample_nom,
             y_title="€ (nominal)",
             subtitle="Évolution nominale"
         )
-    
+
     with tabs[1]:
+        sample_real = (pt_real[:, np.random.choice(pt_real.shape[1],
+                         size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
+                       if show_sample_paths else None)
         fig_real = plot_percentiles_plotly(
             dates,
             q10_real, q50_real, q90_real,
-            livret_real, "Livret A (réel)",
+            livret_real_step, "Livret A (réel)",
             matelas_real, "Matelas (0%, réel)",
-            sample_paths = (pt_real[:, np.random.choice(pt_real.shape[1], 
-                            size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
-                            if show_sample_paths else None),
+            sample_paths=sample_real,
             y_title="€ constants (pouvoir d’achat)",
             subtitle="Évolution corrigée de l’inflation"
         )
-    
 
-   # === Exports (PNG + CSV) ===
-    import io
-    
-    # PNG
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
-    st.download_button(
-        label="📥 Télécharger le graphique (PNG)",
-        data=buf.getvalue(),
-        file_name="simulation_jojo.png",
-        mime="image/png",
-        # width="stretch"  # optionnel si tu veux l'étirer
-    )
-    
+    # === Exports (PNG + CSV) ===
+    import io, zipfile
+
+    # PNG : on exporte les deux onglets dans un ZIP (nécessite 'kaleido')
+    try:
+        buf_zip = io.BytesIO()
+        with zipfile.ZipFile(buf_zip, "w") as zf:
+            png_nom  = pio.to_image(fig_nom,  format="png", scale=2)
+            png_real = pio.to_image(fig_real, format="png", scale=2)
+            zf.writestr("simulation_nominal.png",  png_nom)
+            zf.writestr("simulation_reel.png",     png_real)
+        st.download_button(
+            label="📥 Télécharger les graphiques (ZIP)",
+            data=buf_zip.getvalue(),
+            file_name="simu_jojo_graphs.zip",
+            mime="application/zip",
+        )
+    except Exception as e:
+        st.caption("ℹ️ Export PNG indisponible (module *kaleido* manquant sur l’environnement).")
+
     # CSV (percentiles + baselines)
     export_df = pd.DataFrame({
         "date": dates,
-        "q10_nom": q10_nom.values,
-        "q50_nom": q50_nom.values,
-        "q90_nom": q90_nom.values,
+        "q10_nom":  q10_nom.values,
+        "q50_nom":  q50_nom.values,
+        "q90_nom":  q90_nom.values,
         "q10_real": q10_real.values,
         "q50_real": q50_real.values,
         "q90_real": q90_real.values,
-        # ⬇⬇⬇ CHANGEMENTS : on utilise les nouvelles variables
         "livret_nom":  livret_path_step,
         "matelas_nom": matelas_path,
         "livret_real": livret_real_step,
         "matelas_real": matelas_real,
     })
-    csv_bytes = export_df.to_csv(index=False).encode("utf-8")
     st.download_button(
-        label="📥 Télécharger les percentiles (CSV)",
-        data=csv_bytes,
+        label="📥 Télécharger les courbes (CSV)",
+        data=export_df.to_csv(index=False).encode("utf-8"),
         file_name="simulation_jojo_percentiles.csv",
         mime="text/csv",
-        # width="stretch"
     )
-    
-
 
     # ===== Synthèse métriques =====
-    finals_nom = res["finals_nom"]; finals_real = res["finals_real"]
+    finals_nom  = res["finals_nom"]
+    finals_real = res["finals_real"]
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Médiane (réel)", f"{finals_real.median():,.0f} €")
-        st.metric("Taux de croissance annuel composé médian (réel)", "N/A" if np.isnan(res["cagr_real"]) else f"{res['cagr_real']*100:.2f}%/an")
+        st.metric("Taux composé médian (réel)", "N/A" if np.isnan(res["cagr_real"]) else f"{res['cagr_real']*100:.2f}%/an")
     with col2:
         st.metric("Médiane (nominal)", f"{finals_nom.median():,.0f} €")
-        st.metric("Taux de croissance annuel composé médian (nominal)", "N/A" if np.isnan(res["cagr_nom"]) else f"{res['cagr_nom']*100:.2f}%/an")
+        st.metric("Taux composé médian (nominal)", "N/A" if np.isnan(res["cagr_nom"]) else f"{res['cagr_nom']*100:.2f}%/an")
     with col3:
         st.metric("Proportion de runs avec crise", f"{res['prop_with_crisis']*100:.1f}%")
         st.metric("Nb de simulations", f"{int(n_sims):,}")
 
     st.markdown("""
-    👉 **Comment lire les résultats :**  
-    - Les graphiques montrent deux choses :  
-       - en haut : l’évolution en **valeur nominale** (ce que tu verrais sur ton compte en banque)  
-       - en bas : l’évolution en **euros constants** (corrigée de l’inflation, donc en pouvoir d’achat).  
-    - La **zone grisée** correspond aux **80 % de cas les plus probables** (entre scénario défavorable et favorable).  
-    - La **ligne médiane** est le scénario “central” (le plus typique).  
-    - Les lignes **noires et grises** servent de comparaison :  
-       - Livret A à 1.7 %  
-       - Matelas (0 %, juste accumuler le cash sous l’oreiller).  
-    - Tu peux aussi voir quelques trajectoires individuelles (fines) qui montrent à quel point les marchés sont imprévisibles.  
-    
-    💡 **Attention :** Ce n’est pas une prédiction !  
-    C’est une **simulation statistique** basée sur des hypothèses de rendement, volatilité et inflation.  
-    Le but est pédagogique, pour mieux comprendre la puissance des intérêts composés et l’incertitude des marchés.
+    👉 **Comment lire :**  
+    - **Haut** : valeur **nominale** (ce que tu vois sur le compte).  
+    - **Bas** : valeur en **euros constants** (corrigée inflation).  
+    - **Zone grisée** = 80 % des cas. **Médiane** = scénario central.  
+    - Lignes noires/grises = **Livret A** (intérêts 1x/an) vs **Matelas** (0 %).  
+    - Fines lignes = quelques trajectoires réelles simulées (pour voir l’incertitude).
     """)
+    st.success("✅ Simulation terminée")
 
-    st.success("✅ Simulation terminée, merci de l'avoir utilisée, j'espère qu'elle vous a été utile. Joseph")
 else:
     st.info("Choisis tes paramètres puis clique sur **Lancer la simulation**.")
