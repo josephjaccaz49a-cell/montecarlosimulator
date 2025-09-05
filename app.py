@@ -12,17 +12,25 @@ st.title("🚀 Simulateur Monte Carlo multi-actifs de Jojo")
 st.markdown("""
 Bienvenue dans **le simulateur Monte Carlo de Jojo** 🎲📈
 
-J’ai créé cet outil parce que je me suis souvent demandé :  
-*« Que devient vraiment mon argent si j’investis un peu chaque semaine ? »*  
+💡 Cet outil n’a pas été créé pour “optimiser” la richesse individuelle, mais pour montrer, 
+de manière simple, comment l’épargne régulière se transforme dans un système économique capitaliste 
+où l’argent dort rarement tout seul et est actuellement utilisé par les banques pour générer leurs profits,
+via des investissements qui ne respecteraient pas forcément vos critères éthiques.  
 
-Ce simulateur te permet de tester ça :  
-- tu choisis ton apport hebdo, ton horizon et un portefeuille,  
-- on simule des milliers de futurs possibles (avec ou sans crises),  
-- tu vois non seulement la valeur affichée sur ton compte (**nominal**),  
-  mais aussi ton vrai pouvoir d’achat (**corrigé de l’inflation**).  
+👉 Pourquoi ?  
+Parce que comprendre les mécanismes financiers, c’est aussi se donner les moyens de les 
+**reprendre en main collectivement** :  
+- voir comment l’inflation grignote le pouvoir d’achat,  
+- mesurer le rôle des crises dans la fragilité du capital,  
+- comparer l’investissement actif avec les solutions classiques (Livret A, matelas…).  
 
-💡 Ce n’est pas une prédiction ni un conseil, juste une façon pédagogique de montrer à quel point l’épargne régulière, les crises et l’inflation transforment ton futur financier.
+Ici, pas de promesse magique : juste une façon de montrer **comment les règles du jeu 
+fonctionnent réellement**, afin que chacun puisse se les approprier et réfléchir à ce qu’on 
+pourrait en faire, ensemble.  
+
+✊ Bref, un outil pour apprendre, pas pour vendre du rêve.
 """)
+
 
 
 
