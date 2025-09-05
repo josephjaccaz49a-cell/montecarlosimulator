@@ -362,6 +362,14 @@ if st.button("🎬 Lancer la simulation"):
     q10_nom, q50_nom, q90_nom = bands(pt_nom, dates)
     q10_real, q50_real, q90_real = bands(pt_real, dates)
 
+    # après avoir récupéré "years" depuis l’UI
+    weeks = int(52 * years)
+    
+    # -------- Baselines: Livret A (crédit annuel) + Matelas --------
+    livret_rate = 0.017  # 1,7%/an
+    livret_path_step = np.zeros(weeks + 1, dtype=float)
+    livret_path_step[0] = start_value
+
     # Livret A : intérêts crédités 1x/an (PAF), contributions hebdo en escalier
     livret_rate = 0.017  # 1,7%/an
     livret_path_step = np.zeros(weeks + 1, dtype=float)
