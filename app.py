@@ -517,32 +517,31 @@ if st.button("🎬 Lancer la simulation"):
     tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
 
     with tabs[0]:
-        sample_nom = (pt_nom[:, np.random.choice(pt_nom.shape[1],
-                        size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
-                      if show_sample_paths else None)
         fig_nom = plot_percentiles_plotly(
             dates,
             q10_nom, q50_nom, q90_nom,
             livret_path_step, "Livret A (nominal, intérêts annuels)",
             matelas_path, "Matelas (0%)",
-            sample_paths=sample_nom,
+            sample_paths=(pt_nom[:, np.random.choice(pt_nom.shape[1],
+                            size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
+                          if show_sample_paths else None),
             y_title="€ (nominal)",
             subtitle="Évolution nominale"
         )
-
+    
     with tabs[1]:
-        sample_real = (pt_real[:, np.random.choice(pt_real.shape[1],
-                         size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
-                       if show_sample_paths else None)
         fig_real = plot_percentiles_plotly(
             dates,
             q10_real, q50_real, q90_real,
             livret_real_step, "Livret A (réel)",
             matelas_real, "Matelas (0%, réel)",
-            sample_paths=sample_real,
+            sample_paths=(pt_real[:, np.random.choice(pt_real.shape[1],
+                            size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
+                          if show_sample_paths else None),
             y_title="€ constants (pouvoir d’achat)",
             subtitle="Évolution corrigée de l’inflation"
         )
+    
 
     # === Exports (PNG + CSV) ===
     import io, zipfile
