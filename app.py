@@ -362,21 +362,39 @@ if st.button("🎬 Lancer la simulation"):
     q10_nom, q50_nom, q90_nom = bands(pt_nom, dates)
     q10_real, q50_real, q90_real = bands(pt_real, dates)
 
-    # Baselines Livret A + Matelas
+    # Livret A : intérêts crédités 1x/an (PAF), contributions hebdo en escalier
+    livret_rate = 0.017  # 1,7%/an
+    livret_path_step = np.zeros(weeks + 1, dtype=float)
+    livret_path_step[0] = start_value
+    
+    # Matelas (0 %)
+    matelas_path = np.zeros(weeks + 1, dtype=float)
+    matelas_path[0] = start_value
+    
+    # Inflation weekly (pour la série en réel)
     dt = 1/52.0
     infl_w = (1 + inflation_annual)**dt - 1
-    livret_rate = 0.017
-    r_week_livret = (1 + livret_rate)**(1/52) - 1
-
-    livret_path = np.zeros(res["weeks"] + 1); livret_path[0] = start_value
-    matelas_path = np.zeros(res["weeks"] + 1); matelas_path[0] = start_value
-    for t in range(1, res["weeks"] + 1):
+    deflator = (1 + infl_w) ** np.arange(0, weeks + 1)
+    
+    for t in range(1, weeks + 1):
+        # Contribution hebdo
         c = weekly_contribution * ((1 + infl_w)**(t-1)) if index_contrib_to_inflation else weekly_contribution
-        livret_path[t]  = livret_path[t-1] * (1 + r_week_livret) + c
+        # Matelas: juste l'ajout
         matelas_path[t] = matelas_path[t-1] + c
-    deflator = (1 + ((1 + inflation_annual)**dt - 1)) ** np.arange(0, res["weeks"] + 1)
-    livret_real = livret_path / deflator
+    
+        # Livret A: ajout hebdo en escalier
+        balance = livret_path_step[t-1] + c
+    
+        # Si on est sur un anniversaire (t % 52 == 0), on crédite l'intérêt ANNUEL d'un coup
+        if (t % 52) == 0:
+            balance *= (1 + livret_rate)
+    
+        livret_path_step[t] = balance
+    
+    # Séries en "réel"
+    livret_real_step = livret_path_step / deflator
     matelas_real = matelas_path / deflator
+
 
     # ===== Graphiques (1 fenêtre, 2 sous-graphes) =====
     fig, axes = plt.subplots(2, 1, figsize=(11, 7), sharex=True)
@@ -387,7 +405,7 @@ if st.button("🎬 Lancer la simulation"):
     ax.plot(dates, q50_nom.values, label="Scénario central (50/50)")
     ax.plot(dates, q10_nom.values, linestyle="--", linewidth=1, label="Scénario défavorable (90 % de chances d’être au-dessus)")
     ax.plot(dates, q90_nom.values, linestyle="--", linewidth=1, label="Scénario favorable (90 % de chances d’être en dessous)")
-    ax.plot(dates, livret_path, color="black", label="Livret A (nominal)")
+    ax.plot(dates, livret_path_step, color="black", label="Livret A (intérêts crédités 1×/an)")
     ax.plot(dates, matelas_path, color="grey", linestyle=":", label="Matelas (0%)")
     ax.set_ylabel("€ (nominal)")
     ax.set_title("Évolution nominale")
@@ -401,7 +419,7 @@ if st.button("🎬 Lancer la simulation"):
             label="Scénario défavorable (90 % de chances d’être au-dessus)")
     ax.plot(dates, q90_real.values, linestyle="--", linewidth=1,
             label="Scénario favorable (90 % de chances d’être en dessous)")
-    ax.plot(dates, livret_real, color="black", label="Livret A (réel)")
+    ax.plot(dates, livret_real_step, color="black", label="Livret A (réel, intérêts 1×/an)")
     ax.plot(dates, matelas_real, color="grey", linestyle=":", label="Matelas (0 %, réel)")
     ax.set_xlabel("Date"); ax.set_ylabel("€ constants (pouvoir d’achat)")
     ax.set_title("Évolution corrigée de l’inflation")
