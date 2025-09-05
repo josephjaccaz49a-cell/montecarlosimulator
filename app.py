@@ -501,10 +501,10 @@ if st.button("🎬 Lancer la simulation"):
             q10_nom, q50_nom, q90_nom,
             livret_path_step, "Livret A (nominal, intérêts annuels)",
             matelas_path, "Matelas (0%)",
-            sample_paths=(pt_nom[:, np.random.choice(pt_nom.shape[1],
-                            size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
-                          #if show_sample_paths else None
-                         ),
+            #sample_paths=(pt_nom[:, np.random.choice(pt_nom.shape[1],
+            #                size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
+            #              if show_sample_paths else None
+            #             ),
             y_title="€ (nominal)",
         )
     
@@ -514,9 +514,9 @@ if st.button("🎬 Lancer la simulation"):
             q10_real, q50_real, q90_real,
             livret_real_step, "Livret A (réel)",
             matelas_real, "Matelas (0%, réel)",
-            sample_paths=(pt_real[:, np.random.choice(pt_real.shape[1],
-                            size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
-                          if show_sample_paths else None),
+            #sample_paths=(pt_real[:, np.random.choice(pt_real.shape[1],
+            #                size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
+            #              if show_sample_paths else None),
             y_title="€ constants (pouvoir d’achat)",
         )
     
