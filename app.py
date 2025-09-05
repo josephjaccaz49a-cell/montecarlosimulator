@@ -7,7 +7,6 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.io as pio
 pio.templates.default = "plotly_white"
-st.set_page_config(page_title="Simulateur Monte Carlo", layout="wide")
 
 st.set_page_config(page_title="Simulateur Monte Carlo de Jojo", layout="wide")
 
