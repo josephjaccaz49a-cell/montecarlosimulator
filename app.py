@@ -500,7 +500,16 @@ if st.button("🎬 Lancer la simulation"):
             xaxis=dict(showspikes=True, spikemode="across", spikesnap="cursor"),
             yaxis=dict(tickformat=",", showgrid=True, gridcolor="rgba(0,0,0,0.06)"),
             margin=dict(l=10, r=10, t=48, b=10),
-            title=dict(text=subtitle, x=0, y=0.98)
+            title=dict(text=subtitle, x=0, y=0.98),
+            legend=dict(
+                orientation="h",        # horizontale
+                yanchor="top",
+                y=-0.2,                 # sous le graphe
+                xanchor="center",
+                x=0.5,
+                font=dict(size=11)
+            ),
+            margin=dict(l=10, r=10, t=48, b=60),  # espace bas ↑
         )
     
         # Barre d’outils + gestes
