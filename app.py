@@ -12,6 +12,11 @@ st.title("🚀 Simulateur Monte Carlo multi-actifs de Jojo")
 st.markdown("""
 Bienvenue dans **le simulateur Monte Carlo de Jojo** 🎲📈
 
+Ici, on utilise une **simulation de Monte Carlo** : ça veut dire qu’au lieu de prévoir un seul futur, 
+on génère des dizaines de milliers de futurs possibles, avec du hasard dans les rendements, l’inflation et les crises.  
+On peut ensuite voir la zone la plus probable (80 % des cas), un scénario central, 
+et des scénarios défavorables/favorables.  
+
 💡 Cet outil n’a pas été créé pour “optimiser” la richesse individuelle, mais pour montrer, 
 de manière simple, comment l’épargne régulière se transforme dans un système économique capitaliste 
 où l’argent dort rarement tout seul et est actuellement utilisé par les banques pour générer leurs profits,
