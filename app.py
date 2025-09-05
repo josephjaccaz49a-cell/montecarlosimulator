@@ -4,6 +4,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import streamlit as st
+import plotly.graph_objects as go
+import plotly.io as pio
+pio.templates.default = "plotly_white"
+st.set_page_config(page_title="Simulateur Monte Carlo", layout="wide")
 
 st.set_page_config(page_title="Simulateur Monte Carlo de Jojo", layout="wide")
 
@@ -415,96 +419,90 @@ if st.button("🎬 Lancer la simulation"):
     matelas_real = matelas_path / deflator
 
 
-# ---- en haut du fichier (imports) ----
-import plotly.graph_objects as go
-import plotly.io as pio
-pio.templates.default = "plotly_white"
-st.set_page_config(page_title="Simulateur Monte Carlo", layout="wide")
-
 # ========= helper pour un graphe Plotly =========
-def plot_percentiles_plotly(dates, q10, q50, q90, base1, base1_label, base2, base2_label,
-                            sample_paths=None, y_title="€", subtitle=""):
-    x = pd.to_datetime(dates)
-
-    fig = go.Figure()
-
-    # Fourchette 80% (q10–q90)
-    fig.add_trace(go.Scatter(
-        x=x, y=q90.values, name="Fourchette probable (80%)",
-        line=dict(width=0), hoverinfo="skip"
-    ))
-    fig.add_trace(go.Scatter(
-        x=x, y=q10.values, name="Fourchette probable (80%)",
-        fill='tonexty', mode='lines', line=dict(width=0),
-        hoverinfo="skip", showlegend=True
-    ))
-
-    # Courbes centrales
-    fig.add_trace(go.Scatter(x=x, y=q50.values, name="Médiane (50/50)", mode='lines'))
-    fig.add_trace(go.Scatter(x=x, y=q10.values, name="P10", mode='lines',
-                             line=dict(dash='dash')))
-    fig.add_trace(go.Scatter(x=x, y=q90.values, name="P90", mode='lines',
-                             line=dict(dash='dash')))
-
-    # Baselines
-    fig.add_trace(go.Scatter(x=x, y=base1, name=base1_label, mode='lines',
-                             line=dict(color='black')))
-    fig.add_trace(go.Scatter(x=x, y=base2, name=base2_label, mode='lines',
-                             line=dict(color='gray', dash='dot')))
-
-    # Trajectoires échantillon (facultatif)
-    if sample_paths is not None and sample_paths.shape[1] > 0:
-        # une seule légende pour éviter le spam
-        first = True
-        for k in range(sample_paths.shape[1]):
-            fig.add_trace(go.Scatter(
-                x=x, y=sample_paths[:, k], mode='lines',
-                line=dict(width=1), opacity=0.35,
-                name="Trajectoires (échantillon)" if first else None,
-                showlegend=first
-            ))
-            first = False
-
-    fig.update_layout(
-        margin=dict(l=10, r=10, t=40, b=10),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
-        yaxis_title=y_title,
-        xaxis_title="Date",
-        title=subtitle,
-    )
-    # Important : responsive sur mobile
-    st.plotly_chart(fig, width="stretch", height=420, use_container_width=False)
-    return fig
-
-# ================== GRAPHIQUES (onglets responsive) ==================
-tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
-
-with tabs[0]:
-    fig_nom = plot_percentiles_plotly(
-        dates,
-        q10_nom, q50_nom, q90_nom,
-        livret_path, "Livret A (nominal)",
-        matelas_path, "Matelas (0%)",
-        sample_paths = (pt_nom[:, np.random.choice(pt_nom.shape[1], 
-                        size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
-                        if show_sample_paths else None),
-        y_title="€ (nominal)",
-        subtitle="Évolution nominale"
-    )
-
-with tabs[1]:
-    fig_real = plot_percentiles_plotly(
-        dates,
-        q10_real, q50_real, q90_real,
-        livret_real, "Livret A (réel)",
-        matelas_real, "Matelas (0%, réel)",
-        sample_paths = (pt_real[:, np.random.choice(pt_real.shape[1], 
-                        size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
-                        if show_sample_paths else None),
-        y_title="€ constants (pouvoir d’achat)",
-        subtitle="Évolution corrigée de l’inflation"
-    )
-
+    def plot_percentiles_plotly(dates, q10, q50, q90, base1, base1_label, base2, base2_label,
+                                sample_paths=None, y_title="€", subtitle=""):
+        x = pd.to_datetime(dates)
+    
+        fig = go.Figure()
+    
+        # Fourchette 80% (q10–q90)
+        fig.add_trace(go.Scatter(
+            x=x, y=q90.values, name="Fourchette probable (80%)",
+            line=dict(width=0), hoverinfo="skip"
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=q10.values, name="Fourchette probable (80%)",
+            fill='tonexty', mode='lines', line=dict(width=0),
+            hoverinfo="skip", showlegend=True
+        ))
+    
+        # Courbes centrales
+        fig.add_trace(go.Scatter(x=x, y=q50.values, name="Médiane (50/50)", mode='lines'))
+        fig.add_trace(go.Scatter(x=x, y=q10.values, name="P10", mode='lines',
+                                 line=dict(dash='dash')))
+        fig.add_trace(go.Scatter(x=x, y=q90.values, name="P90", mode='lines',
+                                 line=dict(dash='dash')))
+    
+        # Baselines
+        fig.add_trace(go.Scatter(x=x, y=base1, name=base1_label, mode='lines',
+                                 line=dict(color='black')))
+        fig.add_trace(go.Scatter(x=x, y=base2, name=base2_label, mode='lines',
+                                 line=dict(color='gray', dash='dot')))
+    
+        # Trajectoires échantillon (facultatif)
+        if sample_paths is not None and sample_paths.shape[1] > 0:
+            # une seule légende pour éviter le spam
+            first = True
+            for k in range(sample_paths.shape[1]):
+                fig.add_trace(go.Scatter(
+                    x=x, y=sample_paths[:, k], mode='lines',
+                    line=dict(width=1), opacity=0.35,
+                    name="Trajectoires (échantillon)" if first else None,
+                    showlegend=first
+                ))
+                first = False
+    
+        fig.update_layout(
+            margin=dict(l=10, r=10, t=40, b=10),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
+            yaxis_title=y_title,
+            xaxis_title="Date",
+            title=subtitle,
+        )
+        # Important : responsive sur mobile
+        st.plotly_chart(fig, width="stretch", height=420, use_container_width=False)
+        return fig
+    
+    # ================== GRAPHIQUES (onglets responsive) ==================
+    tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
+    
+    with tabs[0]:
+        fig_nom = plot_percentiles_plotly(
+            dates,
+            q10_nom, q50_nom, q90_nom,
+            livret_path, "Livret A (nominal)",
+            matelas_path, "Matelas (0%)",
+            sample_paths = (pt_nom[:, np.random.choice(pt_nom.shape[1], 
+                            size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
+                            if show_sample_paths else None),
+            y_title="€ (nominal)",
+            subtitle="Évolution nominale"
+        )
+    
+    with tabs[1]:
+        fig_real = plot_percentiles_plotly(
+            dates,
+            q10_real, q50_real, q90_real,
+            livret_real, "Livret A (réel)",
+            matelas_real, "Matelas (0%, réel)",
+            sample_paths = (pt_real[:, np.random.choice(pt_real.shape[1], 
+                            size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
+                            if show_sample_paths else None),
+            y_title="€ constants (pouvoir d’achat)",
+            subtitle="Évolution corrigée de l’inflation"
+        )
+    
 
    # === Exports (PNG + CSV) ===
     import io
