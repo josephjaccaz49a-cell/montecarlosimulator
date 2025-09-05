@@ -140,7 +140,7 @@ if _scn["inflation_annual"] is not None:
 
 
 # ================== Sélecteur de portefeuille ==================
-st.subheader("🧺 Choisis un portefeuille type")
+st.subheader("📊 Choisis un portefeuille type")
 
 PRESETS = {
     "Standard équilibré": [
