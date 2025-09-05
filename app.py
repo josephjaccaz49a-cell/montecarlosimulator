@@ -450,9 +450,10 @@ if st.button("🎬 Lancer la simulation"):
 
     st.pyplot(fig)
 
+   # === Exports (PNG + CSV) ===
     import io
-
-    # -- Export PNG du graphe --
+    
+    # PNG
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
     st.download_button(
@@ -460,9 +461,10 @@ if st.button("🎬 Lancer la simulation"):
         data=buf.getvalue(),
         file_name="simulation_jojo.png",
         mime="image/png",
+        # width="stretch"  # optionnel si tu veux l'étirer
     )
     
-    # -- Export CSV des courbes clés --
+    # CSV (percentiles + baselines)
     export_df = pd.DataFrame({
         "date": dates,
         "q10_nom": q10_nom.values,
@@ -471,9 +473,10 @@ if st.button("🎬 Lancer la simulation"):
         "q10_real": q10_real.values,
         "q50_real": q50_real.values,
         "q90_real": q90_real.values,
-        "livret_nom": livret_path,
+        # ⬇⬇⬇ CHANGEMENTS : on utilise les nouvelles variables
+        "livret_nom":  livret_path_step,
         "matelas_nom": matelas_path,
-        "livret_real": livret_real,
+        "livret_real": livret_real_step,
         "matelas_real": matelas_real,
     })
     csv_bytes = export_df.to_csv(index=False).encode("utf-8")
@@ -482,7 +485,9 @@ if st.button("🎬 Lancer la simulation"):
         data=csv_bytes,
         file_name="simulation_jojo_percentiles.csv",
         mime="text/csv",
+        # width="stretch"
     )
+    
 
 
     # ===== Synthèse métriques =====
