@@ -13,8 +13,11 @@ st.set_page_config(page_title="Simulateur Monte Carlo de Jojo", layout="wide")
 st.title("🚀 Simulateur de Monte Carlo multi-actifs de Jojo")
 
 st.markdown("""
-Bienvenue, ici, on utilise la méthode de Monte Carlo qui est une méthode algorithmique via de l'aléatoire : ça veut dire qu’au lieu de prévoir un seul futur, 
-on génère des dizaines de milliers de futurs possibles, avec du hasard dans les rendements, l’inflation et les crises.  
+Bienvenue à toi !
+
+Ici, on utilise une méthode algorithmique qui intègre de l'aléatoire, méthode dite de Monte Carlo, pour mesurer un risque.
+Simplement, cela veut dire qu’au lieu de prévoir un seul futur sur une stratégie d'épargne, on génère des milliers de futurs possibles, 
+avec du hasard dans les rendements, l’inflation et les crises.  
 On peut ensuite voir la zone la plus probable (80 % des cas), un scénario central, 
 et des scénarios défavorables/favorables.  
 
