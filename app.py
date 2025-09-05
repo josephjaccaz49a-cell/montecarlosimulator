@@ -516,7 +516,8 @@ if st.button("🎬 Lancer la simulation"):
                 xanchor="center",
                 x=0.5,
                 font=dict(size=11)
-            )
+            ),
+            showlegend=False
         )
         
         # Barre d’outils + gestes
