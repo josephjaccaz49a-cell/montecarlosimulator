@@ -595,5 +595,3 @@ with col_msg:
     - Fines lignes = quelques trajectoires réelles simulées (pour voir l’incertitude).
     """)
 
-    else:
-        st.info("Choisis tes paramètres puis clique sur **Lancer la simulation**.")
