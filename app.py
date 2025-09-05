@@ -369,7 +369,7 @@ if "run" not in st.session_state:
 col_btn, col_msg, col_reset = st.columns([1, 3, 1])
 
 with col_btn:
-    clicked = st.button("🎬 Lancer la simulation")
+    clicked = st.button("🖥️👩‍🔬 Lancer la simulation")
 
 # Update state
 if clicked:
@@ -378,7 +378,7 @@ if clicked:
 # Success badge beside the button
 with col_msg:
     if st.session_state.run:
-        st.success("✅ Simulation prête")
+        st.success("😻 Simulation prête")
 
 # ---- SIMULATION: guard everything below with this ----
 if st.session_state.run:
