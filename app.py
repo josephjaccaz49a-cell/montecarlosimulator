@@ -62,7 +62,7 @@ with colE:
                                 value=2.0, step=0.1)           # tous FLOAT
 inflation_annual = inflation_pct / 100.0
 
-scenario_label = st.selectbox("Scénario de crises", ["Doux (crises rares/courtes)","Central (réaliste)","Stress (fréquentes/longues/fortes)"])
+
 show_sample_paths = st.checkbox("Afficher des trajectoires individuelles", value=True)
 n_sample_paths = st.number_input(
     "Nombre de trajectoires à afficher (max 30)",
