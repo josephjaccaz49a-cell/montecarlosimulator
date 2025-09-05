@@ -66,12 +66,12 @@ with colE:
 inflation_annual = inflation_pct / 100.0
 
 
-show_sample_paths = st.checkbox("Afficher des trajectoires individuelles", value=True)
-n_sample_paths = st.number_input(
-    "Nombre de trajectoires à afficher (max 30)",
-    min_value=0, max_value=30, value=12, step=1
-)
-n_sample_paths = int(n_sample_paths)
+#show_sample_paths = st.checkbox("Afficher des trajectoires individuelles", value=True)
+#n_sample_paths = st.number_input(
+#    "Nombre de trajectoires à afficher (max 30)",
+#    min_value=0, max_value=30, value=12, step=1
+#)
+#n_sample_paths = int(n_sample_paths)
 
 index_contrib_to_inflation = st.checkbox("Augmenter ton versement chaque année selon l’inflation (pour garder le même pouvoir d’achat)", value=False)
 
