@@ -123,6 +123,27 @@ PRESETS = {
        {"name": "Or (spot)",                       "weight": 0.10, "mu": 0.03,  "sigma": 0.18, "dividend_yield": 0.000, "beta_crisis": 0.60},
        {"name": "Cash / Monétaire EUR",            "weight": 0.05, "mu": 0.02,  "sigma": 0.01, "dividend_yield": 0.000, "beta_crisis": 0.00},
    ],
+    
+    # Le plus éthique, Critères ESG fictifs
+    "Portefeuille Éthique (ESG/Green)": [
+       
+        {"name": "MSCI World ESG Screened",        "weight": 0.40, "mu": 0.060, "sigma": 0.15, "dividend_yield": 0.018, "beta_crisis": 1.0},
+        {"name": "MSCI Emerging Markets ESG",      "weight": 0.15, "mu": 0.070, "sigma": 0.20, "dividend_yield": 0.020, "beta_crisis": 1.0},
+        {"name": "MSCI Europe ESG Dividend",       "weight": 0.15, "mu": 0.055, "sigma": 0.14, "dividend_yield": 0.030, "beta_crisis": 1.0},
+        {"name": "Obligations vertes (Green Bonds)","weight": 0.20, "mu": 0.025, "sigma": 0.05, "dividend_yield": 0.000, "beta_crisis": 0.3},
+        {"name": "ETF Énergies Renouvelables",    "weight": 0.10, "mu": 0.065, "sigma": 0.22, "dividend_yield": 0.000, "beta_crisis": 1.2},
+    ],
+
+    # Portefeuille Vice pas bien
+    "Portefeuille Vice (pétrole, tabac, alcool)": [
+     
+        {"name": "ExxonMobil",        "weight": 0.30, "mu": 0.055, "sigma": 0.22, "dividend_yield": 0.040, "beta_crisis": 1.2},
+        {"name": "Chevron",           "weight": 0.20, "mu": 0.055, "sigma": 0.22, "dividend_yield": 0.038, "beta_crisis": 1.2},
+        {"name": "Philip Morris",     "weight": 0.20, "mu": 0.045, "sigma": 0.18, "dividend_yield": 0.050, "beta_crisis": 1.0},
+        {"name": "British American Tobacco", "weight": 0.10, "mu": 0.045, "sigma": 0.18, "dividend_yield": 0.060, "beta_crisis": 1.0},
+        {"name": "Diageo (spiritueux)", "weight": 0.10, "mu": 0.050, "sigma": 0.16, "dividend_yield": 0.030, "beta_crisis": 0.9},
+        {"name": "AB InBev (bière)",    "weight": 0.10, "mu": 0.050, "sigma": 0.18, "dividend_yield": 0.025, "beta_crisis": 1.0},
+    ],
 
 
     # Très offensif : max actions, peu d'oblig, risque élevé.
