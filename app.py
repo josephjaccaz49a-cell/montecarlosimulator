@@ -107,7 +107,7 @@ SCENARIOS = {
     ),
 
     "Effondrement systémique": dict(
-        label="☠️ Fin du capitalisme — effondrement systémique", 
+        label="☠️ Fin du capitalisme — effondrement systémique, crises (100%), réalistes (-20%/an), vol×3, durées max, hyperinflation +10%/an", 
         p_crisis=1.0,                 # crise systématique : toutes les trajectoires plongent
         crisis_mu_shift=-0.20,        # chute massive : -20%/an pendant la crise
         crisis_sigma_multiplier=3.0,  # volatilité décuplée
