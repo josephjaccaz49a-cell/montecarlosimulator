@@ -363,7 +363,14 @@ def run_monte_carlo(n_sims, years, weekly_contribution, start_value, inflation_a
     )
 
 # ================== Lancer la simulation ==================
-if st.button("🎬 Lancer la simulation"):
+col_btn, col_msg = st.columns([1,3])
+with col_btn:
+    run_clicked = st.button("🎬 Lancer la simulation")
+
+with col_msg:
+    if run_clicked:
+        st.success("✅ Simulation terminée")
+
     with st.spinner("Ça turbine fort…"):
         res = run_monte_carlo(
             n_sims, years, weekly_contribution, start_value, inflation_annual,
