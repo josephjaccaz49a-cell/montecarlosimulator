@@ -82,7 +82,7 @@ use_custom_corr = st.checkbox(
 # ==== Scénarios ====
 SCENARIOS = {
     "doux": dict(
-        label="🌱 Doux — crises rares (25%), peu intenses (-4%/an), vol×1.3, courtes (0.5–2 ans)",
+        label="🌱 Doux — crises rares (probabilité d'au mois une crise : 25%), peu intenses (-4%/an), vol×1.3, courtes (0.5–2 ans)",
         p_crisis=0.25, crisis_mu_shift=-0.04, crisis_sigma_multiplier=1.3,
         short_share=0.70, short_range=(0.5,2.0),
         mid_share=0.25,  mid_range=(2.0,4.0),
@@ -90,7 +90,7 @@ SCENARIOS = {
         inflation_annual=None
     ),
     "central": dict(
-        label="⚖️ Central — crises modérées (45%), réalistes (-6%/an), vol×1.5, durées 0.5–10 ans",
+        label="⚖️ Central — crises modérées (probabilité d'au mois une crise : 45%), réalistes (-6%/an), vol×1.5, durées 0.5–10 ans",
         p_crisis=0.45, crisis_mu_shift=-0.06, crisis_sigma_multiplier=1.5,
         short_share=0.60, short_range=(0.5,2.0),
         mid_share=0.30,  mid_range=(2.0,5.0),
@@ -98,7 +98,7 @@ SCENARIOS = {
         inflation_annual=None
     ),
     "stress": dict(
-        label="🔥 Stress — crises fréquentes (60%), sévères (-10%/an), vol×1.7, longues (0.5–12 ans), inflation 3%",
+        label="🔥 Stress — crises fréquentes (probabilité d'au mois une crise : 60%), sévères (-10%/an), vol×1.7, longues (0.5–12 ans), inflation 3%",
         p_crisis=0.60, crisis_mu_shift=-0.10, crisis_sigma_multiplier=1.7,
         short_share=0.40, short_range=(0.5,2.0),
         mid_share=0.35,  mid_range=(2.0,6.0),
