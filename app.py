@@ -526,7 +526,6 @@ if st.button("🎬 Lancer la simulation"):
                             size=min(n_sample_paths, pt_nom.shape[1]), replace=False)]
                           if show_sample_paths else None),
             y_title="€ (nominal)",
-            subtitle="Évolution nominale"
         )
     
     with tabs[1]:
@@ -539,7 +538,6 @@ if st.button("🎬 Lancer la simulation"):
                             size=min(n_sample_paths, pt_real.shape[1]), replace=False)]
                           if show_sample_paths else None),
             y_title="€ constants (pouvoir d’achat)",
-            subtitle="Évolution corrigée de l’inflation"
         )
     
 
