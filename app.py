@@ -105,6 +105,16 @@ SCENARIOS = {
         long_share=0.25, long_range=(6.0,12.0),
         inflation_annual=0.03
     ),
+
+    "☠️ Fin du capitalisme — effondrement systémique": dict(
+        p_crisis=1.0,                 # crise systématique : toutes les trajectoires plongent
+        crisis_mu_shift=-0.20,        # chute massive : -20%/an pendant la crise
+        crisis_sigma_multiplier=3.0,  # volatilité décuplée
+        short_share=0.00, short_range=(0,0),  # pas de crises courtes
+        mid_share=0.00,  mid_range=(0,0),
+        long_share=1.00, long_range=(10,35),  # crise longue, dure toute la simu
+        inflation_annual=0.10         # hyperinflation permanente (10%/an)
+    ),
 }
 
 # ---- Selectbox basé sur les labels, mapping sûr vers la clé ----
