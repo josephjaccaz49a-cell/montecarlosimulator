@@ -406,52 +406,112 @@ if st.button("🎬 Lancer la simulation"):
     matelas_real     = matelas_path     / deflator
 
     # ========= helper Plotly =========
-    def plot_percentiles_plotly(dates, q10, q50, q90,
-                                base1, base1_label, base2, base2_label,
-                                sample_paths=None, y_title="€", subtitle=""):
+    def plot_percentiles_plotly(
+        dates, q10, q50, q90,
+        base1, base1_label,
+        base2, base2_label,
+        sample_paths=None,
+        y_title="€",
+        subtitle=""
+    ):
+        import plotly.graph_objects as go
+        import plotly.io as pio
+        import numpy as np
+        import pandas as pd
+    
         x = pd.to_datetime(dates)
+    
+        # Palette simple & lisible
+        col_band  = "#C7E3F4"  # bande 80%
+        col_med   = "#005BBB"  # médiane (bleu)
+        col_p     = "#7A7A7A"  # p10/p90
+        col_base1 = "#111111"  # livret
+        col_base2 = "#8A8A8A"  # matelas
+    
         fig = go.Figure()
-
-        # Fourchette 80% (q10–q90)
-        fig.add_trace(go.Scatter(x=x, y=q90.values, name="Fourchette probable (80%)",
-                                 line=dict(width=0), hoverinfo="skip"))
-        fig.add_trace(go.Scatter(x=x, y=q10.values, name="Fourchette probable (80%)",
-                                 fill='tonexty', mode='lines', line=dict(width=0),
-                                 hoverinfo="skip", showlegend=True))
-
-        # Courbes centrales
-        fig.add_trace(go.Scatter(x=x, y=q50.values, name="Médiane (50/50)", mode='lines'))
-        fig.add_trace(go.Scatter(x=x, y=q10.values, name="P10 (défavorable)", mode='lines',
-                                 line=dict(dash='dash')))
-        fig.add_trace(go.Scatter(x=x, y=q90.values, name="P90 (favorable)", mode='lines',
-                                 line=dict(dash='dash')))
-
+    
+        # Fourchette 80% (q10–q90) -> aplat propre
+        fig.add_trace(go.Scatter(
+            x=x, y=q90.values, mode="lines", line=dict(width=0),
+            hoverinfo="skip", showlegend=False
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=q10.values, mode="lines",
+            fill="tonexty", fillcolor=col_band,
+            line=dict(width=0), name="Zone probable (80%)",
+            hoverinfo="skip"
+        ))
+    
+        # Médiane bien visible
+        fig.add_trace(go.Scatter(
+            x=x, y=q50.values, name="Scénario central",
+            mode="lines",
+            line=dict(color=col_med, width=3),
+            hovertemplate="%{x|%d %b %Y}<br><b>%{y:,.0f} €</b><extra></extra>"
+        ))
+    
+        # P10 / P90 en pointillés légers
+        fig.add_trace(go.Scatter(
+            x=x, y=q10.values, name="Défavorable (P10)",
+            mode="lines",
+            line=dict(color=col_p, width=1.5, dash="dash"),
+            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=q90.values, name="Favorable (P90)",
+            mode="lines",
+            line=dict(color=col_p, width=1.5, dash="dash"),
+            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+        ))
+    
         # Baselines
-        fig.add_trace(go.Scatter(x=x, y=base1, name=base1_label, mode='lines'))
-        fig.add_trace(go.Scatter(x=x, y=base2, name=base2_label, mode='lines'))
-
-        # Trajectoires échantillon
+        fig.add_trace(go.Scatter(
+            x=x, y=base1, name=base1_label,
+            mode="lines", line=dict(color=col_base1, width=2),
+            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=base2, name=base2_label,
+            mode="lines", line=dict(color=col_base2, width=2, dash="dot"),
+            hovertemplate="%{x|%d %b %Y}<br>%{y:,.0f} €<extra></extra>"
+        ))
+    
+        # Trajectoires (facultatif) : fines, semi-transparentes, une seule entrée de légende
         if sample_paths is not None and sample_paths.shape[1] > 0:
             first = True
             for k in range(sample_paths.shape[1]):
                 fig.add_trace(go.Scatter(
-                    x=x, y=sample_paths[:, k], mode='lines',
-                    line=dict(width=1), opacity=0.35,
+                    x=x, y=sample_paths[:, k], mode="lines",
+                    line=dict(width=1),
+                    opacity=0.25,
                     name="Trajectoires (échantillon)" if first else None,
-                    showlegend=first
+                    showlegend=first,
+                    hoverinfo="skip"
                 ))
                 first = False
-
+    
+        # Mise en forme mobile-friendly
         fig.update_layout(
-            margin=dict(l=8, r=8, t=40, b=8),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
-            yaxis_title=y_title,
-            xaxis_title="Date",
-            title=subtitle,
+            title=dict(text=subtitle, x=0.0, xanchor="left", y=0.95),
+            margin=dict(l=10, r=10, t=48, b=10),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0, font=dict(size=12)),
+            hovermode="x unified",
+            xaxis=dict(
+                showspikes=True, spikemode="across", spikesnap="cursor", showgrid=False
+            ),
+            yaxis=dict(
+                title=y_title, tickformat=",", showgrid=True, gridcolor="rgba(0,0,0,0.06)"
+            ),
+            font=dict(size=14)
         )
-        # mobile-friendly
-        st.plotly_chart(fig, width="stretch", height=420)
+    
+        # Rendu Streamlit (API récente)
+        st.plotly_chart(fig, width="stretch", height=420, config={
+            "displayModeBar": False
+        })
+    
         return fig
+
 
     # ================== GRAPHIQUES (onglets responsive) ==================
     tabs = st.tabs(["📈 Nominal", "💶 Corrigé de l’inflation"])
